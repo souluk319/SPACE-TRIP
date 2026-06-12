@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>우주여행 — 지구에서 우주 끝까지</title>
+    <meta name="description" content="지구에서 관측 가능한 우주 끝까지, 스크롤로 떠나는 교육용 스케일 여행" />
+  </head>
+  <body>
+    <canvas id="space"></canvas>
+
+    <div id="scale-panel">
+      <div id="scale-label">화면 폭: -</div>
+      <div id="gauge">
+        <div id="gauge-track"></div>
+        <div id="gauge-marker"></div>
+      </div>
+    </div>
+
+    <div id="side-controls">
+      <button id="zoom-in" aria-label="확대">+</button>
+      <button id="zoom-out" aria-label="축소">−</button>
+      <button id="voice-toggle" aria-label="음성 안내 켜기/끄기" aria-pressed="true">🔊</button>
+    </div>
+
+    <div id="bottom">
+      <div id="caption-card">
+        <div id="caption-title"></div>
+        <div id="caption-text"></div>
+      </div>
+      <nav id="chips" aria-label="구간 이동"></nav>
+    </div>
+
+    <div id="start-overlay">
+      <h1>우주여행</h1>
+      <p>지구에서 관측 가능한 우주의 끝까지,<br />스크롤 한 번으로 떠나는 스케일 여행</p>
+      <button id="start-btn">여행 시작</button>
+      <small>마우스 휠 · 핀치 · 버튼으로 확대/축소할 수 있어요</small>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
