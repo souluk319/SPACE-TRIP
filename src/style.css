@@ -36,6 +36,14 @@ body {
   cursor: grabbing;
 }
 
+/* ── 시네마틱 비네트 ── */
+#vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 6, 0.42) 100%);
+}
+
 /* ── 3D 천체 한글 라벨 ── */
 #labels {
   position: fixed;
@@ -87,6 +95,7 @@ body {
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 #gauge {
@@ -272,9 +281,14 @@ body {
 }
 
 #start-overlay h1 {
-  font-size: 44px;
-  letter-spacing: 0.18em;
-  text-indent: 0.18em;
+  font-size: 52px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  background: linear-gradient(160deg, #ffffff 20%, #ffd34d 60%, #ff9a4d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 24px rgba(255, 211, 77, 0.25));
 }
 
 #start-overlay p {
@@ -290,7 +304,7 @@ body {
 
 #start-btn {
   margin-top: 6px;
-  padding: 13px 42px;
+  padding: 14px 46px;
   font-size: 17px;
   font-weight: 700;
   color: #1a1405;
@@ -298,10 +312,18 @@ body {
   border: none;
   border-radius: 999px;
   cursor: pointer;
+  box-shadow: 0 0 28px rgba(255, 211, 77, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 #start-btn:hover {
   filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 0 40px rgba(255, 211, 77, 0.55);
+}
+
+.chip.active {
+  box-shadow: 0 0 16px rgba(255, 211, 77, 0.35);
 }
 
 /* ── 모바일 ── */

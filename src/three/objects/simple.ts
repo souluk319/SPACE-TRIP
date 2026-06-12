@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mulberry32 } from '../../core/math';
 import type { Body } from '../../scene/types';
 import { PARTICLE_SCALE } from '../stage';
+import { getStarSpikeTexture } from '../textures';
 import { AlphaGroup, makeDot, type WorldObject } from './common';
 
 /* ── 궤도 라인 (단위 원, XZ 평면) ── */
@@ -31,7 +32,7 @@ export function buildOrbit(body: Body): WorldObject {
 
 export function buildStarDot(body: Body): WorldObject {
   const color = String(body.params?.color ?? '#ffd34d');
-  return { body, root: null, dot: makeDot(color), setAlpha: () => {} };
+  return { body, root: null, dot: makeDot(color, getStarSpikeTexture()), setAlpha: () => {} };
 }
 
 export function buildMarker(body: Body): WorldObject {

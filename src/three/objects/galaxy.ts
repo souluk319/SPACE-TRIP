@@ -74,6 +74,56 @@ export function buildMilkyWay(body: Body): WorldObject {
   );
   root.add(new THREE.Points(geo, mat));
 
+  // 더스트 레인 — 나선팔 안쪽 가장자리를 따라가는 어두운 입자 (normal 블렌딩이 빛을 가림)
+  const dustCount = Math.round(9000 * PARTICLE_SCALE);
+  const dustPos = new Float32Array(dustCount * 3);
+  for (let i = 0; i < dustCount; i++) {
+    const arm = i % 4;
+    const off = (arm * Math.PI) / 2;
+    const t = 0.15 + Math.pow(rand(), 0.7) * 0.8;
+    let r = 0.05 * Math.pow(20, t);
+    r *= 1 + (rand() - 0.5) * 0.1;
+    const ang = off + t * 4.6 + 0.22 + (rand() - 0.5) * 0.2;
+    dustPos[i * 3] = Math.cos(ang) * r;
+    dustPos[i * 3 + 1] = (rand() + rand() - 1) * 0.012;
+    dustPos[i * 3 + 2] = Math.sin(ang) * r;
+  }
+  const dustGeo = new THREE.BufferGeometry();
+  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+  const dustMat = alpha.add(
+    new THREE.PointsMaterial({
+      color: '#070510',
+      size: 2.2,
+      sizeAttenuation: false,
+      depthWrite: false,
+    }),
+    0.4,
+  );
+  root.add(new THREE.Points(dustGeo, dustMat));
+
+  // HII 영역 — 나선팔의 분홍/푸른 성운 글로우
+  const hiiCount = Math.round(46 * Math.max(PARTICLE_SCALE, 0.6));
+  for (let i = 0; i < hiiCount; i++) {
+    const arm = i % 4;
+    const off = (arm * Math.PI) / 2;
+    const t = 0.3 + rand() * 0.62;
+    const r = 0.05 * Math.pow(20, t) * (1 + (rand() - 0.5) * 0.14);
+    const ang = off + t * 4.6 + (rand() - 0.5) * 0.3;
+    const hiiMat = alpha.add(
+      new THREE.SpriteMaterial({
+        map: getGlowTexture(),
+        color: rand() < 0.55 ? '#ff9ec8' : '#9cc4ff',
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+      0.1 + rand() * 0.14,
+    );
+    const hii = new THREE.Sprite(hiiMat);
+    hii.position.set(Math.cos(ang) * r, (rand() - 0.5) * 0.02, Math.sin(ang) * r);
+    hii.scale.setScalar(0.03 + rand() * 0.06);
+    root.add(hii);
+  }
+
   // 코어 글로우 + 벌지
   const coreMat = alpha.add(
     new THREE.SpriteMaterial({

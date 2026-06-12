@@ -12,6 +12,7 @@ import { OrbitRig } from './three/orbitRig';
 import { World } from './three/rescale';
 import { Environment } from './three/environment';
 import { LabelLayer } from './three/labels';
+import { sunDirUniform } from './three/objects/earth';
 
 const canvas = document.getElementById('space') as HTMLCanvasElement;
 
@@ -70,6 +71,17 @@ function frame(now: number): void {
     (SUN_POS.y - camera.center.y) * m2u,
   );
   stage.updateLight(sunVec);
+
+  // 지구 셰이더의 태양 방향 (지구 = 월드 원점 기준)
+  if (sunVec.lengthSq() > 1e-8) {
+    sunDirUniform.value
+      .set(
+        sunVec.x + camera.center.x * m2u,
+        sunVec.y + camera.center.z * m2u,
+        sunVec.z + camera.center.y * m2u,
+      )
+      .normalize();
+  }
 
   world.update(dt, camera, stage.camera, labels, viewW, viewH);
   env.update(dt, camera.e);

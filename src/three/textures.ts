@@ -4,15 +4,81 @@ const loader = new THREE.TextureLoader();
 const cache = new Map<string, THREE.Texture>();
 
 /** /textures/<name> lazy 로딩 + 캐시. 컬러맵은 sRGB로 표시 */
-export function getTexture(name: string, srgb = true): THREE.Texture {
+export function getTexture(name: string, srgb = true, anisotropy = 4): THREE.Texture {
   let tex = cache.get(name);
   if (!tex) {
     tex = loader.load(`/textures/${name}`);
     if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 4;
+    tex.anisotropy = anisotropy;
     cache.set(name, tex);
   }
   return tex;
+}
+
+let spikeTex: THREE.CanvasTexture | null = null;
+
+/** 별용 — 글로우 + 4방향 회절 스파이크 (100,000 Stars 스타일) */
+export function getStarSpikeTexture(): THREE.CanvasTexture {
+  if (!spikeTex) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 256;
+    const c = cv.getContext('2d')!;
+    const g = c.createRadialGradient(128, 128, 0, 128, 128, 128);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.1, 'rgba(255,255,255,0.9)');
+    g.addColorStop(0.32, 'rgba(255,255,255,0.18)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = g;
+    c.fillRect(0, 0, 256, 256);
+    // 회절 스파이크 (십자)
+    for (const rot of [0, Math.PI / 2]) {
+      c.save();
+      c.translate(128, 128);
+      c.rotate(rot);
+      const sg = c.createLinearGradient(0, -120, 0, 120);
+      sg.addColorStop(0, 'rgba(255,255,255,0)');
+      sg.addColorStop(0.5, 'rgba(255,255,255,0.85)');
+      sg.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = sg;
+      c.fillRect(-1.6, -120, 3.2, 240);
+      c.restore();
+    }
+    spikeTex = new THREE.CanvasTexture(cv);
+  }
+  return spikeTex;
+}
+
+let raysTex: THREE.CanvasTexture | null = null;
+
+/** 태양 광선 — 방사형 스트릭 */
+export function getSunRaysTexture(): THREE.CanvasTexture {
+  if (!raysTex) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 512;
+    const c = cv.getContext('2d')!;
+    c.translate(256, 256);
+    let seed = 13;
+    const rand = () => {
+      seed = (seed * 16807) % 2147483647;
+      return seed / 2147483647;
+    };
+    for (let i = 0; i < 72; i++) {
+      const ang = (i / 72) * Math.PI * 2 + rand() * 0.08;
+      const len = 110 + rand() * 140;
+      const w = 1 + rand() * 2.2;
+      const grad = c.createLinearGradient(0, 0, Math.cos(ang) * len, Math.sin(ang) * len);
+      grad.addColorStop(0, `rgba(255,220,160,${0.1 + rand() * 0.12})`);
+      grad.addColorStop(1, 'rgba(255,200,120,0)');
+      c.strokeStyle = grad;
+      c.lineWidth = w;
+      c.beginPath();
+      c.moveTo(Math.cos(ang) * 30, Math.sin(ang) * 30);
+      c.lineTo(Math.cos(ang) * len, Math.sin(ang) * len);
+      c.stroke();
+    }
+    raysTex = new THREE.CanvasTexture(cv);
+  }
+  return raysTex;
 }
 
 let glowTex: THREE.CanvasTexture | null = null;

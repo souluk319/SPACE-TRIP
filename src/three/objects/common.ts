@@ -21,10 +21,10 @@ export class AlphaGroup {
   }
 }
 
-/** 원거리 점광 스프라이트 (additive 글로우) */
-export function makeDot(color: string): THREE.Sprite {
+/** 원거리 점광 스프라이트 (additive 글로우, map 교체 가능) */
+export function makeDot(color: string, map?: THREE.Texture): THREE.Sprite {
   const mat = new THREE.SpriteMaterial({
-    map: getGlowTexture(),
+    map: map ?? getGlowTexture(),
     color,
     transparent: true,
     blending: THREE.AdditiveBlending,

@@ -249,7 +249,7 @@ export const BODIES: Body[] = [
       radius: p.radius,
       minE: p.minE,
       maxE: 14.2,
-      minPixelRadius: 1.1,
+      minPixelRadius: 1.6,
       painter: p.ring ? 'gasGiant' : 'rockyPlanet',
       params: {
         tex: p.tex,
