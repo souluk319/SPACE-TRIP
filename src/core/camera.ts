@@ -1,8 +1,8 @@
 import { clamp, lerp, smoothstep } from './math';
-import type { Milestone, Vec2 } from '../scene/types';
+import type { Milestone, Vec3 } from '../scene/types';
 
-/** 지구가 화면을 꽉 채우는 수준 */
-export const E_MIN = 6.8;
+/** 지구가 화면 높이의 ~85%를 차지하는 수준 (원근 카메라 기준 — 더 들어가면 표면 안) */
+export const E_MIN = 7.25;
 /** 관측 가능한 우주가 들어오는 수준 */
 export const E_MAX = 27.2;
 
@@ -13,7 +13,7 @@ export const E_MAX = 27.2;
 export class Camera {
   e = E_MIN + 0.2;
   eTarget = this.e;
-  center: Vec2 = { x: 0, y: 0 };
+  center: Vec3 = { x: 0, y: 0, z: 0 };
 
   zoomBy(deltaE: number): void {
     this.eTarget = clamp(this.eTarget + deltaE, E_MIN, E_MAX);
@@ -43,14 +43,16 @@ export class Camera {
  * milestone focus 앵커들을 구간 경계 직전 0.6자릿수 동안 smoothstep으로 보간.
  * 줌아웃 중 다음 구조가 자연스럽게 화면 중앙으로 온다.
  */
-export function centerForE(e: number, milestones: Milestone[]): Vec2 {
+export function centerForE(e: number, milestones: Milestone[]): Vec3 {
   let cx = milestones[0].focus.x;
   let cy = milestones[0].focus.y;
+  let cz = milestones[0].focus.z;
   for (let i = 1; i < milestones.length; i++) {
     const t = smoothstep(milestones[i].enterE - 0.6, milestones[i].enterE, e);
     if (t <= 0) break;
     cx = lerp(cx, milestones[i].focus.x, t);
     cy = lerp(cy, milestones[i].focus.y, t);
+    cz = lerp(cz, milestones[i].focus.z, t);
   }
-  return { x: cx, y: cy };
+  return { x: cx, y: cy, z: cz };
 }

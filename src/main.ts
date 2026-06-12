@@ -1,36 +1,37 @@
 import './style.css';
+import * as THREE from 'three';
 import { Camera } from './core/camera';
 import { bindInput } from './core/input';
 import { MILESTONES, currentMilestone } from './scene/milestones';
-import { BODIES } from './scene/bodies';
-import { renderBodies } from './render/renderer';
-import { Starfield } from './render/starfield';
+import { SUN_POS } from './scene/bodies';
 import { Narrator } from './audio/narrator';
 import { Hud } from './ui/hud';
 import { Controls } from './ui/controls';
+import { Stage, VIEW_UNITS } from './three/stage';
+import { OrbitRig } from './three/orbitRig';
+import { World } from './three/rescale';
+import { Environment } from './three/environment';
+import { LabelLayer } from './three/labels';
 
 const canvas = document.getElementById('space') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d')!;
 
-let viewW = 0;
-let viewH = 0;
+const stage = new Stage(canvas);
+const world = new World(stage.scene);
+const env = new Environment(stage.scene);
+const rig = new OrbitRig();
+const labels = new LabelLayer();
 
-function resize(): void {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+let viewW = window.innerWidth;
+let viewH = window.innerHeight;
+window.addEventListener('resize', () => {
   viewW = window.innerWidth;
   viewH = window.innerHeight;
-  canvas.width = Math.round(viewW * dpr);
-  canvas.height = Math.round(viewH * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-window.addEventListener('resize', resize);
-resize();
+  stage.resize(viewW, viewH);
+});
 
 const camera = new Camera();
 const narrator = new Narrator();
 narrator.init();
-
-const starfield = new Starfield();
 
 const onGesture = () => narrator.unlock();
 
@@ -39,17 +40,17 @@ const hud = new Hud(MILESTONES, (m) => {
   camera.jumpTo(m.enterE + 0.4);
 });
 const controls = new Controls(camera, narrator, MILESTONES, onGesture);
-bindInput(canvas, camera, onGesture);
+bindInput(canvas, camera, rig, onGesture);
 
 /* 시작 오버레이 — 클릭이 TTS unlock 제스처를 겸한다 */
 const overlay = document.getElementById('start-overlay')!;
 document.getElementById('start-btn')!.addEventListener('click', () => {
   narrator.unlock();
   overlay.classList.add('hidden');
-  // 시작 구간 안내를 즉시 재생
   narrator.requestNarration(currentMilestone(camera.e).narration);
 });
 
+const sunVec = new THREE.Vector3();
 let currentId = '';
 let lastTime = performance.now();
 
@@ -59,11 +60,20 @@ function frame(now: number): void {
 
   if (controls.holdDir !== 0) camera.zoomBy(controls.holdDir * 1.2 * dt);
   camera.update(dt, MILESTONES);
+  rig.update(dt, stage.camera);
 
-  ctx.fillStyle = '#05070f';
-  ctx.fillRect(0, 0, viewW, viewH);
-  starfield.draw(ctx, viewW, viewH, camera.e);
-  renderBodies(ctx, camera, BODIES, viewW, viewH);
+  // 태양 → 포커스 조명 방향
+  const m2u = VIEW_UNITS / Math.pow(10, camera.e);
+  sunVec.set(
+    (SUN_POS.x - camera.center.x) * m2u,
+    (SUN_POS.z - camera.center.z) * m2u,
+    (SUN_POS.y - camera.center.y) * m2u,
+  );
+  stage.updateLight(sunVec);
+
+  world.update(dt, camera, stage.camera, labels, viewW, viewH);
+  env.update(dt, camera.e);
+  stage.render();
 
   hud.updateScale(Math.pow(10, camera.e) * (viewW / viewH));
   hud.updateGauge(camera.e);

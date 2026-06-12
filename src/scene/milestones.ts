@@ -1,7 +1,7 @@
 import type { Milestone } from './types';
 import { SUN_POS, GALAXY_CENTER, LOCAL_GROUP_FOCUS } from './bodies';
 
-const EARTH = { x: 0, y: 0 };
+const EARTH = { x: 0, y: 0, z: 0 };
 
 export const MILESTONES: Milestone[] = [
   {

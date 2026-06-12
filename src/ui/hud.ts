@@ -24,7 +24,8 @@ export class Hud {
   }
 
   private toPct(e: number): number {
-    return ((e - E_MIN) / (E_MAX - E_MIN)) * 100;
+    const pct = ((e - E_MIN) / (E_MAX - E_MIN)) * 100;
+    return Math.min(Math.max(pct, 0), 100);
   }
 
   updateScale(widthMeters: number): void {

@@ -1,6 +1,8 @@
-export interface Vec2 {
+/** 월드 좌표(미터). x/y = 황도면, z = 면에서의 높이. 씬에서는 (x, z, y)로 매핑 */
+export interface Vec3 {
   x: number;
   y: number;
+  z: number;
 }
 
 export interface Milestone {
@@ -9,7 +11,7 @@ export interface Milestone {
   /** 이 지수(e) 이상이면 이 구간. 화면 세로 높이 = 10^e 미터 */
   enterE: number;
   /** 이 구간에서 카메라가 향하는 월드 좌표(미터) */
-  focus: Vec2;
+  focus: Vec3;
   /** TTS로 읽어줄 안내 (2~3문장) */
   narration: string;
   /** 자막 텍스트 */
@@ -38,7 +40,7 @@ export interface Body {
   /** 화면에 표시할 한국어 이름 (옵션) */
   label?: string;
   /** 월드 좌표 (미터) */
-  pos: Vec2;
+  pos: Vec3;
   /** 실제 반지름(미터). orbit은 궤도 반지름, 도식 레이어는 표현 반지름 */
   radius: number;
   /** 가시 지수 구간 */
