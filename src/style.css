@@ -260,6 +260,302 @@ body {
   font-weight: 700;
 }
 
+/* ── 가이드형 여정 UI ── */
+#journey-progress,
+#guide-panel {
+  display: none;
+}
+
+body.journey-mode #journey-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-dim);
+  pointer-events: auto;
+}
+
+.p-label {
+  margin-right: 6px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.p-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(150, 180, 255, 0.3);
+}
+
+.p-dot.done {
+  background: var(--accent);
+}
+
+body.journey-mode #guide-panel {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  max-width: 600px;
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  pointer-events: auto;
+}
+
+body.journey-mode #caption-card,
+body.journey-mode #chips {
+  display: none;
+}
+
+#guide-avatar {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  background: linear-gradient(160deg, #2a3b6e, #16203f);
+  border: 1px solid rgba(160, 190, 255, 0.35);
+  border-radius: 50%;
+}
+
+#guide-content {
+  flex: 1;
+  min-width: 0;
+}
+
+#guide-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+#guide-text {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+#mission-row {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 211, 77, 0.1);
+  border: 1px solid rgba(255, 211, 77, 0.35);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#quiz-box {
+  margin-top: 10px;
+}
+
+#quiz-q {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+#quiz-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quiz-choice {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(40, 56, 100, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.quiz-choice:hover:not(:disabled) {
+  border-color: rgba(160, 190, 255, 0.6);
+}
+
+.quiz-choice.correct {
+  background: rgba(74, 200, 120, 0.25);
+  border-color: #4ac878;
+}
+
+.quiz-choice.wrong {
+  background: rgba(230, 90, 90, 0.25);
+  border-color: #e65a5a;
+}
+
+#quiz-explain {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+#journey-next {
+  margin-top: 12px;
+  padding: 11px 30px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1405;
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(255, 211, 77, 0.3);
+}
+
+#journey-next:hover {
+  filter: brightness(1.08);
+}
+
+/* ── 미션 타깃 마커 ── */
+#targets {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.target-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  background: rgba(255, 211, 77, 0.07);
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+  animation: target-pulse 1.6s ease-out infinite;
+}
+
+.target-marker .t-label {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+
+.target-marker.found {
+  border-color: #4ac878;
+  background: rgba(74, 200, 120, 0.15);
+  animation: none;
+}
+
+.target-marker.found .t-label {
+  color: #4ac878;
+}
+
+.target-marker.found::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #4ac878;
+}
+
+@keyframes target-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 211, 77, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 22px rgba(255, 211, 77, 0);
+  }
+}
+
+/* ── 완료 카드 ── */
+#complete-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 24px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(24, 38, 80, 0.94), rgba(5, 7, 15, 0.97));
+  transition: opacity 0.5s ease;
+}
+
+#complete-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#complete-overlay h2 {
+  font-size: 32px;
+}
+
+#complete-overlay p {
+  color: var(--text-dim);
+}
+
+#learned-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 22px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-size: 15px;
+  text-align: left;
+}
+
+#complete-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+#complete-actions button {
+  padding: 12px 26px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+}
+
+#restart-btn {
+  color: #1a1405;
+  background: var(--accent);
+}
+
+#explore-btn {
+  color: var(--text);
+  background: rgba(40, 56, 100, 0.7);
+  border: 1px solid var(--border) !important;
+}
+
 /* ── 시작 오버레이 ── */
 #start-overlay {
   position: fixed;
@@ -336,9 +632,9 @@ body {
   }
 
   #side-controls {
-    top: auto;
+    top: 140px;
     right: 10px;
-    bottom: 170px;
+    bottom: auto;
     transform: none;
   }
 

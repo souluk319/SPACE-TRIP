@@ -13,6 +13,9 @@ import { World } from './three/rescale';
 import { Environment } from './three/environment';
 import { LabelLayer } from './three/labels';
 import { sunDirUniform } from './three/objects/earth';
+import { Journey } from './journey/journey';
+import { JOURNEY_STAGES } from './journey/stages';
+import { TargetLayer } from './ui/targets';
 
 const canvas = document.getElementById('space') as HTMLCanvasElement;
 
@@ -43,12 +46,23 @@ const hud = new Hud(MILESTONES, (m) => {
 const controls = new Controls(camera, narrator, MILESTONES, onGesture);
 bindInput(canvas, camera, rig, onGesture);
 
+const targets = new TargetLayer();
+const journey = new Journey(camera, narrator, targets, (ids) => world.setTracked(ids));
+
 /* 시작 오버레이 — 클릭이 TTS unlock 제스처를 겸한다 */
 const overlay = document.getElementById('start-overlay')!;
 document.getElementById('start-btn')!.addEventListener('click', () => {
   narrator.unlock();
+  narrator.preload([
+    'j-intro',
+    'j-correct',
+    'j-wrong',
+    'j-complete',
+    ...JOURNEY_STAGES.flatMap((s) => [s.audio.stage, s.audio.quiz, s.audio.explain]),
+    ...MILESTONES.map((m) => m.id),
+  ]);
   overlay.classList.add('hidden');
-  narrator.requestNarration(currentMilestone(camera.e).narration);
+  journey.start();
 });
 
 const sunVec = new THREE.Vector3();
@@ -87,15 +101,21 @@ function frame(now: number): void {
   env.update(dt, camera.e);
   stage.render();
 
+  journey.update();
+  targets.update(world.trackedPos);
+
   hud.updateScale(Math.pow(10, camera.e) * (viewW / viewH));
   hud.updateGauge(camera.e);
 
   const m = currentMilestone(camera.e);
   if (m.id !== currentId) {
     currentId = m.id;
-    hud.showCaption(m);
     controls.highlight(m.id);
-    narrator.requestNarration(m.narration);
+    // 가이드 여정 중에는 토리가 안내 — 자유 탐험 모드에서만 구간 내레이션
+    if (journey.mode === 'free') {
+      hud.showCaption(m);
+      narrator.requestNarration(m.id, m.narration);
+    }
   }
 
   requestAnimationFrame(frame);

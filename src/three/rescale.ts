@@ -56,6 +56,14 @@ interface Entry extends WorldObject {
 export class World {
   private objects: Entry[] = [];
   private labelVec = new THREE.Vector3();
+  private tracked = new Set<string>();
+  /** 미션 타깃용 — 추적 중인 천체의 화면 좌표 (매 프레임 갱신) */
+  readonly trackedPos = new Map<string, { x: number; y: number; visible: boolean }>();
+
+  setTracked(ids: string[]): void {
+    this.tracked = new Set(ids);
+    this.trackedPos.clear();
+  }
 
   constructor(scene: THREE.Scene) {
     for (const body of BODIES) {
@@ -124,6 +132,16 @@ export class World {
           obj.dot.scale.set(sc, sc, 1);
           (obj.dot.material as THREE.SpriteMaterial).opacity = dotAlpha * 0.9;
         }
+      }
+
+      if (this.tracked.has(b.id)) {
+        this.labelVec.set(sx, sy, sz).project(threeCam);
+        const onScreen = this.labelVec.z <= 1 && this.labelVec.z >= -1;
+        this.trackedPos.set(b.id, {
+          x: ((this.labelVec.x + 1) / 2) * viewW,
+          y: (1 - (this.labelVec.y + 1) / 2) * viewH,
+          visible: !hidden && onScreen,
+        });
       }
 
       if (b.label && !hidden && a > 0.4 && pxRad < 240) {

@@ -24,6 +24,9 @@ export class Controls {
       btn.addEventListener('pointerup', stop);
       btn.addEventListener('pointerleave', stop);
       btn.addEventListener('pointercancel', stop);
+      // 버튼 밖에서 손을 떼도 확실히 멈추는 백스톱
+      window.addEventListener('pointerup', stop);
+      window.addEventListener('blur', stop);
     };
     bindHold('zoom-in', -1);
     bindHold('zoom-out', 1);

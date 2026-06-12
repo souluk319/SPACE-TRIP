@@ -25,6 +25,21 @@
     </div>
 
     <div id="bottom">
+      <div id="journey-progress" aria-label="여정 진행도"></div>
+      <div id="guide-panel">
+        <div id="guide-avatar">🧑‍🚀</div>
+        <div id="guide-content">
+          <div id="guide-name">우주 안내원 토리</div>
+          <div id="guide-text"></div>
+          <div id="mission-row" hidden>🚀 <span id="mission-text"></span></div>
+          <div id="quiz-box" hidden>
+            <div id="quiz-q"></div>
+            <div id="quiz-choices"></div>
+            <div id="quiz-explain" hidden></div>
+          </div>
+          <button id="journey-next" hidden>다음으로</button>
+        </div>
+      </div>
       <div id="caption-card">
         <div id="caption-title"></div>
         <div id="caption-text"></div>
@@ -32,11 +47,26 @@
       <nav id="chips" aria-label="구간 이동"></nav>
     </div>
 
+    <div id="complete-overlay" class="hidden">
+      <h2>오늘의 우주여행 완료 🎉</h2>
+      <p>지구에서 출발해 달, 태양계, 별, 은하까지 여행했어요.</p>
+      <ul id="learned-list">
+        <li>🌙 달은 생각보다 멀리 있어 (약 38만 km)</li>
+        <li>☀️ 행성들은 태양 주변을 돌아</li>
+        <li>⭐ 태양도 별이야</li>
+        <li>🌌 은하는 수많은 별들의 모임이야</li>
+      </ul>
+      <div id="complete-actions">
+        <button id="restart-btn">다시 여행하기</button>
+        <button id="explore-btn">자유롭게 탐험하기</button>
+      </div>
+    </div>
+
     <div id="start-overlay">
       <h1>우주여행</h1>
-      <p>지구에서 관측 가능한 우주의 끝까지,<br />스크롤 한 번으로 떠나는 스케일 여행</p>
+      <p>지구에서 은하까지,<br />5분 동안 떠나는 스케일 여행</p>
       <button id="start-btn">여행 시작</button>
-      <small>휠·핀치로 확대/축소, 드래그로 시점 회전</small>
+      <small>각 단계마다 미션을 완료해보세요</small>
       <small>행성 텍스처: Solar System Scope (CC BY 4.0)</small>
     </div>
 
