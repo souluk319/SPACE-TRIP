@@ -63,6 +63,22 @@ body {
   will-change: transform, opacity;
 }
 
+/* ── ?debug=1 패널 ── */
+#debug-panel {
+  position: fixed;
+  left: 10px;
+  bottom: 40px;
+  z-index: 20;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(140, 170, 255, 0.3);
+  border-radius: 8px;
+  font: 11px/1.5 ui-monospace, monospace;
+  color: #9fe8a8;
+  white-space: pre;
+  pointer-events: none;
+}
+
 /* ── 텍스처 출처 (CC BY 4.0) ── */
 #credit {
   position: fixed;
@@ -314,21 +330,19 @@ body.journey-mode #guide-panel {
 }
 
 body.journey-mode #caption-card,
-body.journey-mode #chips {
+body.journey-mode #chips,
+body.journey-mode #home-btn {
   display: none;
 }
 
 #guide-avatar {
   flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  background: linear-gradient(160deg, #2a3b6e, #16203f);
-  border: 1px solid rgba(160, 190, 255, 0.35);
-  border-radius: 50%;
+  width: 58px;
+  height: 75px;
+  padding: 4px 2px 2px;
+  background: linear-gradient(160deg, rgba(42, 59, 110, 0.55), rgba(22, 32, 63, 0.55));
+  border: 1px solid rgba(160, 190, 255, 0.3);
+  border-radius: 14px;
 }
 
 #guide-content {
@@ -406,6 +420,75 @@ body.journey-mode #chips {
   color: var(--text-dim);
 }
 
+#quiz-remember {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 211, 77, 0.12);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ── 배지 토스트 ── */
+#badge-toast {
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  background: linear-gradient(160deg, rgba(60, 48, 14, 0.92), rgba(34, 28, 10, 0.92));
+  border: 1.5px solid var(--accent);
+  border-radius: 999px;
+  box-shadow: 0 0 30px rgba(255, 211, 77, 0.35);
+  opacity: 0;
+  transform: translateX(-50%) translateY(-16px) scale(0.92);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+#badge-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+#badge-toast .b-icon {
+  font-size: 26px;
+}
+
+#badge-toast .b-text {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+#badge-toast .b-text strong {
+  display: block;
+  font-size: 15px;
+  color: var(--accent);
+}
+
+#learned-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#learned-list .b-icon {
+  font-size: 22px;
+}
+
+#learned-list strong {
+  color: var(--accent);
+}
+
+#learned-list small {
+  color: var(--text-dim);
+  margin-left: 4px;
+}
+
 #journey-next {
   margin-top: 12px;
   padding: 11px 30px;
@@ -477,6 +560,57 @@ body.journey-mode #chips {
   justify-content: center;
   font-size: 22px;
   color: #4ac878;
+}
+
+/* 발견 시 퍼지는 링 버스트 */
+.target-marker.found::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 3px solid rgba(74, 200, 120, 0.8);
+  border-radius: 50%;
+  animation: burst-ring 0.55s ease-out forwards;
+}
+
+@keyframes burst-ring {
+  0% {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+/* "찾았다!" 떠오르는 텍스트 */
+.t-pop {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  font-weight: 800;
+  color: #7dffa3;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  animation: pop-rise 1s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes pop-rise {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px) scale(0.7);
+  }
+  25% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-2px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-18px) scale(1);
+  }
 }
 
 @keyframes target-pulse {
@@ -556,6 +690,99 @@ body.journey-mode #chips {
   border: 1px solid var(--border) !important;
 }
 
+/* ── 토리 캐릭터 ── */
+.tori {
+  line-height: 0;
+}
+
+.tori svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tori .t-eyes-excited,
+.tori .t-eyes-cheer,
+.tori .t-mouth-excited,
+.tori .t-mouth-cheer,
+.tori .t-arms-up,
+.tori .t-stars {
+  display: none;
+}
+
+.tori.is-excited .t-eyes-normal,
+.tori.is-excited .t-mouth-normal {
+  display: none;
+}
+
+.tori.is-excited .t-eyes-excited,
+.tori.is-excited .t-mouth-excited {
+  display: block;
+}
+
+.tori.is-cheering .t-eyes-normal,
+.tori.is-cheering .t-mouth-normal,
+.tori.is-cheering .t-arms-down {
+  display: none;
+}
+
+.tori.is-cheering .t-eyes-cheer,
+.tori.is-cheering .t-mouth-cheer,
+.tori.is-cheering .t-arms-up,
+.tori.is-cheering .t-stars {
+  display: block;
+}
+
+.tori.is-cheering svg {
+  animation: tori-bounce 0.55s ease;
+}
+
+.tori.is-excited svg {
+  animation: tori-wiggle 0.5s ease;
+}
+
+.tori .t-stars polygon {
+  transform-origin: center;
+  animation: star-pop 0.9s ease-out infinite;
+}
+
+.tori .t-stars .ts2 {
+  animation-delay: 0.18s;
+}
+
+.tori .t-stars .ts3 {
+  animation-delay: 0.36s;
+}
+
+@keyframes tori-bounce {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-9%) scale(1.04); }
+  65% { transform: translateY(2%) scale(0.99); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes tori-wiggle {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(-4deg); }
+  65% { transform: rotate(3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes star-pop {
+  0% { opacity: 0; transform: scale(0.4); }
+  35% { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+/* 시작 화면의 둥실 떠 있는 토리 */
+.tori-float {
+  animation: tori-float 3.4s ease-in-out infinite;
+}
+
+@keyframes tori-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-14px) rotate(2deg); }
+}
+
 /* ── 시작 오버레이 ── */
 #start-overlay {
   position: fixed;
@@ -565,9 +792,10 @@ body.journey-mode #chips {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 14px;
   text-align: center;
-  background: radial-gradient(ellipse at 50% 60%, rgba(20, 34, 70, 0.92), rgba(5, 7, 15, 0.97));
+  /* 중앙은 투명하게 — 라이브 3D 지구가 토리 뒤로 비친다 */
+  background: radial-gradient(ellipse at 50% 46%, rgba(6, 10, 24, 0.18) 0%, rgba(5, 7, 15, 0.86) 100%);
   transition: opacity 0.6s ease;
 }
 
@@ -576,26 +804,64 @@ body.journey-mode #chips {
   pointer-events: none;
 }
 
-#start-overlay h1 {
-  font-size: 52px;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
-  background: linear-gradient(160deg, #ffffff 20%, #ffd34d 60%, #ff9a4d 100%);
+#invite-wordmark {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  background: linear-gradient(160deg, #ffffff 20%, #ffd34d 70%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 24px rgba(255, 211, 77, 0.25));
+  opacity: 0.9;
 }
 
-#start-overlay p {
-  font-size: 16px;
-  line-height: 1.7;
-  color: var(--text-dim);
+#invite-tori {
+  width: 168px;
+  height: 218px;
+}
+
+#invite-bubble {
+  position: relative;
+  max-width: 320px;
+  padding: 14px 20px 12px;
+  background: rgba(248, 250, 255, 0.96);
+  color: #1c2334;
+  border-radius: 18px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.5;
+  cursor: pointer;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+}
+
+#invite-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 10px solid transparent;
+  border-top-color: rgba(248, 250, 255, 0.96);
+  border-bottom: none;
+}
+
+#invite-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8a93ad;
 }
 
 #start-overlay small {
   color: var(--text-dim);
   font-size: 12px;
+}
+
+#start-overlay .credit-line {
+  font-size: 10px;
+  opacity: 0.65;
 }
 
 #start-btn {

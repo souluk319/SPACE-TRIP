@@ -3,11 +3,21 @@ import type { OrbitRig } from '../three/orbitRig';
 
 const ROT = 0.0052; // rad/px
 
+/** 자유 탐험 전용 입력 훅 — 여정 모드에서는 호출되지 않는다 */
+export interface InputHooks {
+  isFree(): boolean;
+  /** 휠 포인터 / 핀치 중점 좌표 (줌-투-포인터 앵커) */
+  onZoomAt(px: number, py: number): void;
+  /** 드래그가 아닌 단일 포인터 탭 (탭-투-포커스) */
+  onTap(px: number, py: number): void;
+}
+
 /**
  * 입력 라우팅:
- * - 휠 / ctrl+휠(트랙패드 핀치) → 줌 지수 e
+ * - 휠 / ctrl+휠(트랙패드 핀치) → 줌 지수 e (+자유 모드: 포인터 앵커)
  * - 포인터 1개 드래그 → 시점 궤도 회전 (임계 4px, 릴리즈 관성)
- * - 포인터 2개 핀치 → 줌 지수 e (로그 비율)
+ * - 포인터 1개 탭 → 자유 모드에서 탭-투-포커스
+ * - 포인터 2개 핀치 → 줌 지수 e (+자유 모드: 중점 앵커)
  * - 키보드 +/- → e
  */
 export function bindInput(
@@ -15,6 +25,7 @@ export function bindInput(
   camera: Camera,
   rig: OrbitRig,
   onGesture: () => void,
+  hooks: InputHooks,
 ): void {
   canvas.addEventListener(
     'wheel',
@@ -25,6 +36,7 @@ export function bindInput(
       if (ev.deltaMode === WheelEvent.DOM_DELTA_LINE) d *= 16;
       const sens = ev.ctrlKey ? 0.005 : 0.0014;
       camera.zoomBy(d * sens);
+      if (hooks.isFree()) hooks.onZoomAt(ev.clientX, ev.clientY);
     },
     { passive: false },
   );
@@ -33,6 +45,7 @@ export function bindInput(
   let dragging = false;
   let downX = 0;
   let downY = 0;
+  let gestureMaxPointers = 0;
   let pinchDist = 0;
   let vAz = 0;
   let vEl = 0;
@@ -40,8 +53,13 @@ export function bindInput(
 
   canvas.addEventListener('pointerdown', (ev: PointerEvent) => {
     onGesture();
-    canvas.setPointerCapture(ev.pointerId);
+    try {
+      canvas.setPointerCapture(ev.pointerId);
+    } catch {
+      // 합성 이벤트 등 캡처 불가 시에도 입력 처리는 계속
+    }
     pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    gestureMaxPointers = Math.max(gestureMaxPointers, pointers.size);
     if (pointers.size === 1) {
       dragging = false;
       downX = ev.clientX;
@@ -79,7 +97,10 @@ export function bindInput(
       p.y = ev.clientY;
       const [a, b] = [...pointers.values()];
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinchDist > 0 && d > 0) camera.zoomBy(-Math.log10(d / pinchDist));
+      if (pinchDist > 0 && d > 0) {
+        camera.zoomBy(-Math.log10(d / pinchDist));
+        if (hooks.isFree()) hooks.onZoomAt((a.x + b.x) / 2, (a.y + b.y) / 2);
+      }
       pinchDist = d;
     }
   });
@@ -87,9 +108,14 @@ export function bindInput(
   const release = (ev: PointerEvent) => {
     pointers.delete(ev.pointerId);
     if (pointers.size < 2) pinchDist = 0;
-    if (pointers.size === 0 && dragging) {
-      rig.fling(vAz, vEl);
+    if (pointers.size === 0) {
+      if (dragging) {
+        rig.fling(vAz, vEl);
+      } else if (gestureMaxPointers === 1 && hooks.isFree()) {
+        hooks.onTap(ev.clientX, ev.clientY);
+      }
       dragging = false;
+      gestureMaxPointers = 0;
     }
   };
   canvas.addEventListener('pointerup', release);

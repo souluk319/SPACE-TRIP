@@ -14,6 +14,22 @@ The universe is not just far away. It is built in layers of scale.
 
 The app should guide children through a short space trip with missions, simple narration, and checkpoints.
 
+## Opening hook
+
+The first screen should feel like an invitation, not a textbook.
+
+Recommended opening:
+
+```text
+A human guide in a spacesuit floats above Earth.
+Guide: 안녕, 우주여행은 처음이지?
+Guide: 오늘은 지구에서 출발해서 은하까지 가볼 거야.
+Guide: 걱정 마. 내가 길을 알려줄게.
+Button: 출발하기
+```
+
+The opening screen should make the child feel guided and safe before any science explanation appears.
+
 ## Target user
 
 - Primary: early elementary children.

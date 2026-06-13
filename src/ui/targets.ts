@@ -32,6 +32,11 @@ export class TargetLayer {
         if (!item || item.found) return;
         item.found = true;
         el.classList.add('found');
+        const pop = document.createElement('span');
+        pop.className = 't-pop';
+        pop.textContent = '찾았다!';
+        el.appendChild(pop);
+        window.setTimeout(() => pop.remove(), 1100);
         this.onFound?.(def.id);
       });
       this.container.appendChild(el);

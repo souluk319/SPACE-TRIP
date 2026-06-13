@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>우주여행 — 지구에서 우주 끝까지</title>
-    <meta name="description" content="지구에서 관측 가능한 우주 끝까지, 스크롤로 떠나는 교육용 스케일 여행" />
+    <title>우주여행 — 토리와 함께 지구에서 은하까지</title>
+    <meta
+      name="description"
+      content="초등 어린이를 위한 가이드 우주여행. 안내원 토리와 함께 지구에서 은하까지 5분 동안 미션을 풀며 우주의 스케일을 배워요."
+    />
   </head>
   <body>
     <canvas id="space"></canvas>
@@ -22,6 +25,7 @@
       <button id="zoom-in" aria-label="확대">+</button>
       <button id="zoom-out" aria-label="축소">−</button>
       <button id="voice-toggle" aria-label="음성 안내 켜기/끄기" aria-pressed="true">🔊</button>
+      <button id="home-btn" aria-label="지구로 돌아가기">🌍</button>
     </div>
 
     <div id="bottom">
@@ -36,6 +40,7 @@
             <div id="quiz-q"></div>
             <div id="quiz-choices"></div>
             <div id="quiz-explain" hidden></div>
+            <div id="quiz-remember" hidden></div>
           </div>
           <button id="journey-next" hidden>다음으로</button>
         </div>
@@ -47,15 +52,12 @@
       <nav id="chips" aria-label="구간 이동"></nav>
     </div>
 
+    <div id="badge-toast" aria-live="polite"></div>
+
     <div id="complete-overlay" class="hidden">
       <h2>오늘의 우주여행 완료 🎉</h2>
-      <p>지구에서 출발해 달, 태양계, 별, 은하까지 여행했어요.</p>
-      <ul id="learned-list">
-        <li>🌙 달은 생각보다 멀리 있어 (약 38만 km)</li>
-        <li>☀️ 행성들은 태양 주변을 돌아</li>
-        <li>⭐ 태양도 별이야</li>
-        <li>🌌 은하는 수많은 별들의 모임이야</li>
-      </ul>
+      <p>오늘 얻은 우주 배지</p>
+      <ul id="learned-list"></ul>
       <div id="complete-actions">
         <button id="restart-btn">다시 여행하기</button>
         <button id="explore-btn">자유롭게 탐험하기</button>
@@ -63,11 +65,15 @@
     </div>
 
     <div id="start-overlay">
-      <h1>우주여행</h1>
-      <p>지구에서 은하까지,<br />5분 동안 떠나는 스케일 여행</p>
-      <button id="start-btn">여행 시작</button>
-      <small>각 단계마다 미션을 완료해보세요</small>
-      <small>행성 텍스처: Solar System Scope (CC BY 4.0)</small>
+      <div id="invite-wordmark">우주여행</div>
+      <div id="invite-bubble">
+        <span id="invite-text"></span>
+        <span id="invite-hint">탭해서 계속 ▸</span>
+      </div>
+      <div id="invite-tori"></div>
+      <button id="start-btn">출발하기</button>
+      <small>지구에서 은하까지 5분 여행</small>
+      <small class="credit-line">행성 텍스처: Solar System Scope (CC BY 4.0)</small>
     </div>
 
     <div id="credit">

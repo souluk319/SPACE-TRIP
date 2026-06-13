@@ -65,6 +65,45 @@ export class World {
     this.trackedPos.clear();
   }
 
+  /**
+   * 탭-투-포커스 히트테스트 — 탭 시점에 1회만 라벨 보유 + 현재 가시 천체를
+   * 투영해 탭 픽셀 근처(터치 타깃 최소 28px) 최근접 천체를 찾는다.
+   */
+  pickAt(
+    px: number,
+    py: number,
+    e: number,
+    center: { x: number; y: number; z: number },
+    threeCam: THREE.PerspectiveCamera,
+    viewW: number,
+    viewH: number,
+  ): Body | null {
+    const m2u = VIEW_UNITS / Math.pow(10, e);
+    const unitsPerPx = VIEW_UNITS / viewH;
+    let best: Body | null = null;
+    let bestDist = Infinity;
+
+    for (const obj of this.objects) {
+      const b = obj.body;
+      if (!b.label) continue;
+      if (lodAlpha(b, e) <= 0.3) continue;
+      this.labelVec
+        .set((b.pos.x - center.x) * m2u, (b.pos.z - center.z) * m2u, (b.pos.y - center.y) * m2u)
+        .project(threeCam);
+      if (this.labelVec.z > 1 || this.labelVec.z < -1) continue;
+      const sx = ((this.labelVec.x + 1) / 2) * viewW;
+      const sy = (1 - (this.labelVec.y + 1) / 2) * viewH;
+      const pxRad = (b.radius * m2u) / unitsPerPx;
+      const r = Math.max(pxRad * 1.2, 28);
+      const d = Math.hypot(px - sx, py - sy);
+      if (d < r && d < bestDist) {
+        best = b;
+        bestDist = d;
+      }
+    }
+    return best;
+  }
+
   constructor(scene: THREE.Scene) {
     for (const body of BODIES) {
       const obj = BUILDERS[body.painter](body);

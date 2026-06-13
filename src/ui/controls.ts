@@ -1,5 +1,6 @@
 import type { Camera } from '../core/camera';
 import type { Narrator } from '../audio/narrator';
+import { sfx } from '../audio/sfx';
 import type { Milestone } from '../scene/types';
 
 export class Controls {
@@ -36,6 +37,7 @@ export class Controls {
       onGesture();
       const on = !narrator.enabled;
       narrator.setEnabled(on);
+      sfx.enabled = on;
       voiceBtn.setAttribute('aria-pressed', String(on));
       voiceBtn.textContent = on ? '🔊' : '🔇';
     });

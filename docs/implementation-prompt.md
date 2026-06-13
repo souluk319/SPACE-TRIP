@@ -14,7 +14,14 @@ Required product structure:
 1. Start screen
 - Title: 우주여행
 - Subtitle: 지구에서 은하까지, 5분 동안 떠나는 스케일 여행
-- Start button: 여행 시작
+- Main visual: a human guide in a spacesuit floating in front of Earth
+- The guide should speak through a speech bubble:
+  - 안녕, 우주여행은 처음이지?
+  - 오늘은 지구에서 출발해서 은하까지 가볼 거야.
+  - 걱정 마. 내가 길을 알려줄게.
+- Start button: 출발하기
+- Small note: 지구에서 은하까지 5분 여행
+- The first screen should feel like an invitation to an adventure, not a science lecture.
 
 2. Guided journey screen
 - A visible space scene
@@ -57,6 +64,8 @@ Visible copy must be Korean, short, and understandable for early elementary chil
 
 Important design rules:
 - This must be a guided lesson, not a free exploration simulator.
+- The guide character is part of the core product, not decoration.
+- Do not begin with dense science text. Begin with the spacesuit guide invitation.
 - Do not show too many objects at once.
 - Do not use long explanation paragraphs.
 - The user must be able to complete the journey with simple taps.

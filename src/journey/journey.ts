@@ -1,10 +1,11 @@
 import type { Camera } from '../core/camera';
 import type { Narrator } from '../audio/narrator';
+import { sfx } from '../audio/sfx';
 import type { TargetLayer } from '../ui/targets';
+import type { Tori } from '../ui/tori';
 import {
   COMPLETE_TEXT,
   CORRECT_TEXT,
-  INTRO_TEXT,
   JOURNEY_STAGES,
   WRONG_TEXT,
   type JourneyStage,
@@ -12,7 +13,6 @@ import {
 
 type State =
   | 'idle'
-  | 'intro'
   | 'travel' // 스테이지 시점으로 이동 중
   | 'mission' // find 미션 진행 중
   | 'mission-travel' // goto 미션 이동 중
@@ -41,38 +41,48 @@ export class Journey {
   private quizQ = document.getElementById('quiz-q')!;
   private quizChoices = document.getElementById('quiz-choices')!;
   private quizExplain = document.getElementById('quiz-explain')!;
+  private quizRemember = document.getElementById('quiz-remember')!;
   private nextBtn = document.getElementById('journey-next') as HTMLButtonElement;
   private progressEl = document.getElementById('journey-progress')!;
   private completeOverlay = document.getElementById('complete-overlay')!;
+  private badgeToast = document.getElementById('badge-toast')!;
+  private badgeTimer: number | null = null;
 
   private camera: Camera;
   private narrator: Narrator;
   private targets: TargetLayer;
   private setTracked: (ids: string[]) => void;
+  private tori: Tori;
 
   constructor(
     camera: Camera,
     narrator: Narrator,
     targets: TargetLayer,
     setTracked: (ids: string[]) => void,
+    tori: Tori,
   ) {
     this.camera = camera;
     this.narrator = narrator;
     this.targets = targets;
     this.setTracked = setTracked;
+    this.tori = tori;
     this.nextBtn.addEventListener('click', () => this.onNext());
     document.getElementById('restart-btn')!.addEventListener('click', () => location.reload());
     document.getElementById('explore-btn')!.addEventListener('click', () => this.enterFreeMode());
   }
 
-  /** 시작 오버레이의 "여행 시작" 클릭 직후 */
+  /** 시작 오버레이의 "출발하기" 클릭 직후 — 바로 스테이지 1 */
   start(): void {
     document.body.classList.add('journey-mode');
-    this.state = 'intro';
-    this.setBubble(INTRO_TEXT);
-    this.narrator.requestNarration('j-intro', INTRO_TEXT);
-    this.showNext('출발!');
-    this.updateProgress();
+    this.beginStage(0);
+  }
+
+  /** ?debug=1 패널용 상태 요약 */
+  debugInfo(): { stage: string; state: string } {
+    return {
+      stage: this.idx >= 0 ? `${this.idx + 1}/${JOURNEY_STAGES.length} ${this.stage.id}` : '-',
+      state: this.mode === 'free' ? 'free' : this.state,
+    };
   }
 
   /** 매 프레임 — 카메라 도착 감지 */
@@ -99,6 +109,8 @@ export class Journey {
     this.setBubble(s.guideText);
     this.setMission(s.mission);
     this.narrator.requestNarration(s.audio.stage, s.guideText);
+    this.tori.setState('excited', 2600);
+    sfx.transition();
     this.camera.jumpTo(s.viewE);
     // find 미션 타깃은 도착 전에 미리 깔아 화면에 나타나게
     if (s.missionType === 'find' && s.targets) {
@@ -117,15 +129,22 @@ export class Journey {
     } else if (s.missionType === 'find') {
       this.state = 'mission';
       this.foundLeft = s.targets?.length ?? 0;
-      this.targets.set(s.targets ?? [], () => this.onTargetFound());
+      this.targets.set(s.targets ?? [], (id) => this.onTargetFound(id));
     } else {
       // watch — 도착 자체가 미션 완료
       this.onMissionComplete();
     }
   }
 
-  private onTargetFound(): void {
+  private onTargetFound(id: string): void {
     this.foundLeft--;
+    sfx.found();
+    this.tori.setState('cheering', 1800);
+    const target = this.stage.targets?.find((t) => t.id === id);
+    if (target?.found) {
+      this.setBubble(target.found);
+      if (target.foundAudio) this.narrator.requestNarration(target.foundAudio, target.found);
+    }
     if (this.foundLeft > 0) {
       this.setMission(`잘했어! 하나 더 찾아보자 (${this.foundLeft}개 남음)`);
       return;
@@ -136,9 +155,12 @@ export class Journey {
   private onMissionComplete(): void {
     const s = this.stage;
     this.setMission('미션 완료! ⭐');
+    this.tori.setState('cheering', 2200);
     if (s.quizE !== undefined && this.state !== 'quiz-travel') {
       this.state = 'quiz-travel';
-      this.setBubble('탐사선도 멀리 갔지만, 별까지의 거리는 훨씬 더 멀어. 별들 사이로 나가보자!');
+      const line = '탐사선도 멀리 갔지만, 별까지는 훨씬 더 멀어! 별들 사이로 나가보자!';
+      this.setBubble(line);
+      this.narrator.requestNarration('j-t3', line);
       this.clearTargets();
       this.camera.jumpTo(s.quizE);
       return;
@@ -154,6 +176,7 @@ export class Journey {
     this.quizBox.hidden = false;
     this.quizQ.textContent = s.quiz.question;
     this.quizExplain.hidden = true;
+    this.quizRemember.hidden = true;
     this.quizChoices.innerHTML = '';
     s.quiz.choices.forEach((choice, i) => {
       const btn = document.createElement('button');
@@ -177,9 +200,16 @@ export class Journey {
       if (bi === s.quiz.answerIndex) b.classList.add('correct');
     });
     this.setBubble(correct ? CORRECT_TEXT : WRONG_TEXT);
+    this.tori.setState(correct ? 'cheering' : 'normal', correct ? 2600 : undefined);
+    if (correct) sfx.correct();
+    else sfx.wrong();
     this.narrator.requestNarration(correct ? 'j-correct' : 'j-wrong', correct ? CORRECT_TEXT : WRONG_TEXT);
     this.quizExplain.textContent = s.quiz.explanation;
     this.quizExplain.hidden = false;
+    this.quizRemember.textContent = `✨ ${s.remember}`;
+    this.quizRemember.hidden = false;
+    // 배지 수여 토스트
+    window.setTimeout(() => this.showBadge(), 1400);
     // 정답 효과음 뒤에 해설 음성
     if (this.chainTimer !== null) clearTimeout(this.chainTimer);
     this.chainTimer = window.setTimeout(() => {
@@ -195,18 +225,33 @@ export class Journey {
       clearTimeout(this.chainTimer);
       this.chainTimer = null;
     }
-    if (this.state === 'intro') {
-      this.beginStage(0);
-    } else if (this.state === 'explain') {
+    if (this.state === 'explain') {
       if (this.idx === JOURNEY_STAGES.length - 1) this.showComplete();
       else this.beginStage(this.idx + 1);
     }
+  }
+
+  private showBadge(): void {
+    const b = this.stage.badge;
+    this.badgeToast.innerHTML = `<span class="b-icon">${b.icon}</span><span class="b-text">배지 획득!<strong>${b.name}</strong></span>`;
+    this.badgeToast.classList.add('show');
+    sfx.badge();
+    if (this.badgeTimer !== null) clearTimeout(this.badgeTimer);
+    this.badgeTimer = window.setTimeout(() => {
+      this.badgeTimer = null;
+      this.badgeToast.classList.remove('show');
+    }, 2600);
   }
 
   private showComplete(): void {
     this.state = 'complete';
     this.hideQuiz();
     this.clearTargets();
+    const list = document.getElementById('learned-list')!;
+    list.innerHTML = JOURNEY_STAGES.map(
+      (s) =>
+        `<li><span class="b-icon">${s.badge.icon}</span> <strong>${s.badge.name}</strong><small>${s.remember.replace('기억하자! ', '')}</small></li>`,
+    ).join('');
     this.completeOverlay.classList.remove('hidden');
     this.narrator.requestNarration('j-complete', COMPLETE_TEXT);
   }

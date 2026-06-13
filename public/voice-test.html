@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>토리 보이스 시안 비교</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 32px 20px;
+        background: #05070f;
+        color: #dfe8ff;
+        font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif;
+      }
+      h1 { font-size: 22px; }
+      p { color: #93a4cc; font-size: 14px; line-height: 1.6; }
+      .voice {
+        max-width: 640px;
+        margin: 14px 0;
+        padding: 16px 18px;
+        background: rgba(10, 16, 32, 0.7);
+        border: 1px solid rgba(140, 170, 255, 0.16);
+        border-radius: 14px;
+      }
+      .voice.current { border-color: #ffd34d; }
+      .voice h2 { margin: 0 0 4px; font-size: 17px; }
+      .voice h2 small { color: #93a4cc; font-weight: 400; font-size: 12px; margin-left: 8px; }
+      .line { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+      .line button {
+        flex: 0 0 auto;
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        border: none;
+        background: #ffd34d;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .line span { font-size: 14px; color: #c4d0ec; }
+    </style>
+  </head>
+  <body>
+    <h1>🎙️ 토리 보이스 시안 비교</h1>
+    <p>
+      Supertonic 3 (speed 1.15) — 같은 대사 2개를 보이스별로 들어보고 마음에 드는 것을 알려주세요.<br />
+      현재 본편 적용: <strong>F1</strong>
+    </p>
+    <div id="list"></div>
+    <script>
+      const VOICES = [
+        { id: 'F1', note: '여성 1 — 현재 적용' },
+        { id: 'F2', note: '여성 2' },
+        { id: 'F4', note: '여성 4' },
+        { id: 'M2', note: '남성 2' },
+      ];
+      const LINES = [
+        '우와, 태양계 도착! 태양 주위를 행성들이 빙글빙글 돌고 있어…',
+        '달은 지구의 4분의 1 크기야. 지구가 훨씬 크지!…',
+      ];
+      const list = document.getElementById('list');
+      let playing = null;
+      for (const v of VOICES) {
+        const card = document.createElement('div');
+        card.className = 'voice' + (v.id === 'F1' ? ' current' : '');
+        card.innerHTML = `<h2>${v.id}<small>${v.note}</small></h2>`;
+        LINES.forEach((text, i) => {
+          const row = document.createElement('div');
+          row.className = 'line';
+          const btn = document.createElement('button');
+          btn.textContent = '▶';
+          btn.addEventListener('click', () => {
+            if (playing) playing.pause();
+            playing = new Audio(`/audio/voice-test/${v.id}-${i + 1}.m4a`);
+            playing.play();
+          });
+          const label = document.createElement('span');
+          label.textContent = text;
+          row.append(btn, label);
+          card.appendChild(row);
+        });
+        list.appendChild(card);
+      }
+    </script>
+  </body>
+</html>

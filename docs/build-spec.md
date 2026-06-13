@@ -42,8 +42,15 @@ Content:
 
 - Title: `우주여행`
 - Subtitle: `지구에서 은하까지, 5분 동안 떠나는 스케일 여행`
-- Button: `여행 시작`
-- Small note: `각 단계마다 미션을 완료해보세요.`
+- Main visual: a human guide in a spacesuit floating in front of Earth
+- Guide speech bubble:
+  - `안녕, 우주여행은 처음이지?`
+  - `오늘은 지구에서 출발해서 은하까지 가볼 거야.`
+  - `걱정 마. 내가 길을 알려줄게.`
+- Button: `출발하기`
+- Small note: `지구에서 은하까지 5분 여행`
+
+The start screen should be an invitation scene. Do not start with a science lecture.
 
 ### 2. Journey screen
 
@@ -159,7 +166,8 @@ The guide does not need to be graphically complex in MVP.
 
 Acceptable MVP:
 
-- Small astronaut icon or simple circular avatar.
+- A human in a spacesuit, or a simple astronaut-style avatar.
+- On the start screen, the guide should float visibly in front of Earth.
 - Text bubble.
 - Stage-specific guide line.
 
@@ -188,6 +196,7 @@ Future:
 ## Acceptance checklist
 
 - App starts with a clear journey start screen.
+- Start screen includes a spacesuit guide invitation with `안녕, 우주여행은 처음이지?`
 - User can complete all 4 stages with simple taps.
 - Each stage has exactly one main learning concept.
 - Each stage has one mission.

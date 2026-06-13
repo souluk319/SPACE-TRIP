@@ -28,6 +28,43 @@ It uses visual scale, simple missions, and a friendly guide character to make ab
 6. The child answers small checkpoints.
 7. The app ends with a completion card.
 
+## Opening experience
+
+The first screen should be a warm invitation from a guide character.
+
+Scene:
+
+- A human guide in a spacesuit floats in front of Earth.
+- Earth slowly rotates in the background.
+- The guide appears before any science explanation.
+- The mood is adventure, not lecture.
+
+Opening copy:
+
+```text
+안녕, 우주여행은 처음이지?
+오늘은 지구에서 출발해서 은하까지 가볼 거야.
+걱정 마. 내가 길을 알려줄게.
+```
+
+Button:
+
+```text
+출발하기
+```
+
+Small note:
+
+```text
+지구에서 은하까지 5분 여행
+```
+
+Purpose:
+
+- Make the child feel welcomed.
+- Establish the guide as a companion.
+- Delay dense science text until the journey starts.
+
 ## Product principles
 
 1. Learning beats spectacle.
@@ -172,6 +209,8 @@ Recommended:
 - Dark space background
 - Clear object labels
 - Warm guide character UI
+- First screen with a floating human spacesuit guide
+- Earth visible behind the guide
 - Simple glowing path line
 - Stage-based zoom transitions
 - Large readable Korean text
@@ -180,6 +219,7 @@ Avoid:
 
 - Too many small objects
 - Text floating everywhere
+- Starting with scientific explanation before the guide invitation
 - Overly realistic scale that makes the app unusable
 - Controls that require explanation
 
