@@ -19,6 +19,7 @@ import { JOURNEY_STAGES } from './journey/stages';
 import { TargetLayer } from './ui/targets';
 import { Tori } from './ui/tori';
 import { DebugPanel } from './ui/debug';
+import { Settings } from './ui/settings';
 
 const canvas = document.getElementById('space') as HTMLCanvasElement;
 
@@ -47,6 +48,7 @@ const hud = new Hud(MILESTONES, (m) => {
   camera.jumpTo(m.enterE + 0.4);
 });
 const controls = new Controls(camera, narrator, MILESTONES, onGesture);
+new Settings(narrator, onGesture);
 
 const guideTori = new Tori();
 const avatarEl = document.getElementById('guide-avatar')!;
@@ -73,7 +75,7 @@ document.getElementById('home-btn')!.addEventListener('click', () => {
 });
 
 if (import.meta.env.DEV) {
-  (window as unknown as { __st?: object }).__st = { camera, world, journey };
+  (window as unknown as { __st?: object }).__st = { camera, world, journey, narrator };
 }
 
 const debugPanel = new DebugPanel();

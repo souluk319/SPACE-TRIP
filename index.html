@@ -26,6 +26,33 @@
       <button id="zoom-out" aria-label="축소">−</button>
       <button id="voice-toggle" aria-label="음성 안내 켜기/끄기" aria-pressed="true">🔊</button>
       <button id="home-btn" aria-label="지구로 돌아가기">🌍</button>
+      <button id="settings-btn" aria-label="설정">⚙️</button>
+    </div>
+
+    <div id="settings-overlay" class="hidden">
+      <div id="settings-card">
+        <div id="settings-head">
+          <h2>설정</h2>
+          <button id="settings-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="set-section">
+          <div class="set-label">토리 목소리</div>
+          <div id="voice-grid"></div>
+          <div class="set-hint">목소리를 누르면 미리 들어볼 수 있어요</div>
+        </div>
+
+        <div class="set-section">
+          <label class="set-toggle">
+            <span>음성 안내</span>
+            <input type="checkbox" id="set-voice" checked />
+          </label>
+          <label class="set-toggle">
+            <span>효과음</span>
+            <input type="checkbox" id="set-sfx" checked />
+          </label>
+        </div>
+      </div>
     </div>
 
     <div id="bottom">

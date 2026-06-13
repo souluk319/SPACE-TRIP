@@ -1,14 +1,33 @@
+/** 선택 가능한 토리 목소리 (Supertonic M1~M5 남성 / F1~F5 여성) */
+export const VOICE_OPTIONS = [
+  { id: 'F1', label: '여성 1' },
+  { id: 'F2', label: '여성 2' },
+  { id: 'F3', label: '여성 3' },
+  { id: 'F4', label: '여성 4' },
+  { id: 'F5', label: '여성 5' },
+  { id: 'M1', label: '남성 1' },
+  { id: 'M2', label: '남성 2' },
+  { id: 'M3', label: '남성 3' },
+  { id: 'M4', label: '남성 4' },
+  { id: 'M5', label: '남성 5' },
+];
+
+const VOICE_KEY = 'tori-voice';
+const DEFAULT_VOICE = 'F1';
+
 /**
  * 내레이터 — Supertonic 3(오픈소스 온디바이스 TTS)로 사전 생성한
- * 고품질 음성 파일(/audio/<milestone-id>.m4a)을 재생한다.
+ * 고품질 음성 파일(/audio/<voice>/<id>.m4a)을 재생한다. 보이스는 런타임 전환.
  * 파일이 없거나 재생이 막히면 Web Speech API(ko-KR)로 폴백.
  *
- * 정책은 v1과 동일: 큐 없음 — 항상 마지막 구간 하나만.
+ * 정책: 큐 없음 — 항상 마지막 구간 하나만.
  * 구간 변경 → 즉시 정지 → 600ms 디바운스 후 재생.
  */
 export class Narrator {
   enabled = true;
   unlocked = false;
+  voiceId =
+    (typeof localStorage !== 'undefined' && localStorage.getItem(VOICE_KEY)) || DEFAULT_VOICE;
 
   private voice: SpeechSynthesisVoice | null = null;
   private timer: number | null = null;
@@ -16,6 +35,7 @@ export class Narrator {
   private gen = 0;
   private audioCache = new Map<string, HTMLAudioElement>();
   private current: HTMLAudioElement | null = null;
+  private sample: HTMLAudioElement | null = null;
   private readonly speechSupported =
     typeof window !== 'undefined' && 'speechSynthesis' in window;
 
@@ -82,13 +102,27 @@ export class Narrator {
   }
 
   private getAudio(id: string): HTMLAudioElement {
-    let a = this.audioCache.get(id);
+    const key = `${this.voiceId}/${id}`;
+    let a = this.audioCache.get(key);
     if (!a) {
-      a = new Audio(`/audio/${id}.m4a`);
+      a = new Audio(`/audio/${this.voiceId}/${id}.m4a`);
       a.preload = 'auto';
-      this.audioCache.set(id, a);
+      this.audioCache.set(key, a);
     }
     return a;
+  }
+
+  /** 보이스 전환 — 캐시 비우고 짧은 샘플 미리듣기 */
+  setVoice(voiceId: string, previewText = true): void {
+    this.voiceId = voiceId;
+    if (typeof localStorage !== 'undefined') localStorage.setItem(VOICE_KEY, voiceId);
+    this.stopPlayback();
+    this.audioCache.clear();
+    if (previewText && this.unlocked) {
+      if (this.sample) this.sample.pause();
+      this.sample = new Audio(`/audio/${voiceId}/sample.m4a`);
+      this.sample.play().catch(() => {});
+    }
   }
 
   private playFile(id: string, text: string, gen: number): void {
