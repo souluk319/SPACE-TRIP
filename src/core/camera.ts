@@ -24,6 +24,21 @@ export class Camera {
   private userTarget: Vec3 | null = null;
   /** 포커스 의도가 시작된 시점의 e — 줌아웃 복귀 기준 */
   private eFocus = 0;
+  /** 시네마틱 투어가 특정 천체에 고정 (앵커·userFocus 무시) */
+  private lockCenter: Vec3 | null = null;
+  private lockTarget: Vec3 | null = null;
+
+  /** 투어 — 천체를 화면에 크게 프레이밍 (중심 고정 + 줌) */
+  frameBody(pos: Vec3, e: number): void {
+    this.lockTarget = { ...pos };
+    if (!this.lockCenter) this.lockCenter = { ...this.center };
+    this.eTarget = clamp(e, E_MIN, E_MAX);
+  }
+
+  releaseLock(): void {
+    this.lockCenter = null;
+    this.lockTarget = null;
+  }
 
   zoomBy(deltaE: number): void {
     this.eTarget = clamp(this.eTarget + deltaE, E_MIN, E_MAX);
@@ -32,6 +47,7 @@ export class Camera {
   jumpTo(e: number): void {
     this.eTarget = clamp(e, E_MIN, E_MAX);
     this.clearUserFocus();
+    this.releaseLock();
   }
 
   /** 탭-투-포커스: 천체로 부드럽게 센터링 */
@@ -69,8 +85,18 @@ export class Camera {
     this.e += step;
   }
 
-  /** 2단계: 중심 확정 (앵커 경로 ↔ 사용자 포커스 블렌딩) */
+  /** 2단계: 중심 확정 (투어 고정 > 사용자 포커스 > 앵커 경로) */
   resolveCenter(dt: number, milestones: Milestone[]): void {
+    // 투어 고정 — 천체에 단단히 센터링 (앵커·userFocus 무시)
+    if (this.lockCenter && this.lockTarget) {
+      const lk = 1 - Math.exp(-dt * 3.5);
+      this.lockCenter.x += (this.lockTarget.x - this.lockCenter.x) * lk;
+      this.lockCenter.y += (this.lockTarget.y - this.lockCenter.y) * lk;
+      this.lockCenter.z += (this.lockTarget.z - this.lockCenter.z) * lk;
+      this.center = { ...this.lockCenter };
+      return;
+    }
+
     const anchor = centerForE(this.e, milestones);
     if (!this.userCenter || !this.userTarget) {
       this.center = anchor;

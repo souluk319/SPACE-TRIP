@@ -1,20 +1,21 @@
 import { VOICE_OPTIONS, type Narrator } from '../audio/narrator';
 import { sfx } from '../audio/sfx';
+import { ambient } from '../audio/ambient';
 
-/** 설정 패널 — 토리 목소리 선택 + 음성/효과음 토글 */
+/** 설정 패널 — 내레이터 음성 선택 + 음성/음악/효과음 토글 */
 export class Settings {
   private overlay = document.getElementById('settings-overlay')!;
   private grid = document.getElementById('voice-grid')!;
   private voiceChips = new Map<string, HTMLButtonElement>();
 
   constructor(narrator: Narrator, onGesture: () => void) {
-    const open = document.getElementById('settings-btn')!;
-    const close = document.getElementById('settings-close')!;
-    open.addEventListener('click', () => {
+    document.getElementById('settings-btn')!.addEventListener('click', () => {
       onGesture();
       this.overlay.classList.remove('hidden');
     });
-    close.addEventListener('click', () => this.overlay.classList.add('hidden'));
+    document.getElementById('settings-close')!.addEventListener('click', () =>
+      this.overlay.classList.add('hidden'),
+    );
     this.overlay.addEventListener('click', (e) => {
       if (e.target === this.overlay) this.overlay.classList.add('hidden');
     });
@@ -26,37 +27,30 @@ export class Settings {
       chip.addEventListener('click', () => {
         onGesture();
         narrator.setVoice(v.id);
-        this.highlightVoice(v.id);
+        for (const [vid, c] of this.voiceChips) c.classList.toggle('active', vid === v.id);
       });
       this.grid.appendChild(chip);
       this.voiceChips.set(v.id, chip);
     }
 
     const voiceToggle = document.getElementById('set-voice') as HTMLInputElement;
+    const musicToggle = document.getElementById('set-music') as HTMLInputElement;
     const sfxToggle = document.getElementById('set-sfx') as HTMLInputElement;
-    const sideVoiceBtn = document.getElementById('voice-toggle')!;
 
     voiceToggle.checked = narrator.enabled;
+    musicToggle.checked = ambient.enabled;
     sfxToggle.checked = sfx.enabled;
 
     voiceToggle.addEventListener('change', () => {
       onGesture();
       narrator.setEnabled(voiceToggle.checked);
-      sideVoiceBtn.setAttribute('aria-pressed', String(voiceToggle.checked));
-      sideVoiceBtn.textContent = voiceToggle.checked ? '🔊' : '🔇';
+    });
+    musicToggle.addEventListener('change', () => {
+      onGesture();
+      ambient.setEnabled(musicToggle.checked);
     });
     sfxToggle.addEventListener('change', () => {
       sfx.enabled = sfxToggle.checked;
     });
-
-    // 사이드 음성 버튼과 설정 체크박스 동기화
-    sideVoiceBtn.addEventListener('click', () => {
-      voiceToggle.checked = narrator.enabled;
-      sfxToggle.checked = sfx.enabled;
-    });
-  }
-
-  private highlightVoice(id: string): void {
-    for (const [vid, chip] of this.voiceChips) chip.classList.toggle('active', vid === id);
   }
 }

@@ -2,49 +2,54 @@ import { E_MIN, E_MAX } from '../core/camera';
 import type { Milestone } from '../scene/types';
 import { formatLength } from './format';
 
+/** 스케일 표시 + 챕터 타임라인 + lower-third 내레이션 자막 */
 export class Hud {
   private scaleLabel = document.getElementById('scale-label')!;
-  private gauge = document.getElementById('gauge')!;
-  private gaugeMarker = document.getElementById('gauge-marker')!;
-  private captionCard = document.getElementById('caption-card')!;
-  private captionTitle = document.getElementById('caption-title')!;
-  private captionText = document.getElementById('caption-text')!;
+  private timeline = document.getElementById('timeline')!;
+  private fill = document.getElementById('timeline-fill')!;
+  private marker = document.getElementById('timeline-marker')!;
+  private lower = document.getElementById('lowerthird')!;
+  private chapter = document.getElementById('lt-chapter')!;
+  private caption = document.getElementById('lt-caption')!;
   private swapTimer: number | null = null;
 
   constructor(milestones: Milestone[], onJump: (m: Milestone) => void) {
     for (const m of milestones) {
-      const dot = document.createElement('button');
-      dot.className = 'gauge-dot';
-      dot.title = m.title;
-      dot.setAttribute('aria-label', `${m.title} 구간으로 이동`);
-      dot.style.left = `${this.toPct(m.enterE)}%`;
-      dot.addEventListener('click', () => onJump(m));
-      this.gauge.appendChild(dot);
+      const notch = document.createElement('button');
+      notch.className = 'timeline-notch';
+      notch.title = m.title;
+      notch.setAttribute('aria-label', `${m.title}(으)로 이동`);
+      notch.style.left = `${this.toPct(m.enterE)}%`;
+      notch.addEventListener('click', () => onJump(m));
+      this.timeline.appendChild(notch);
     }
+    // 시작 시 자막 숨김
+    this.lower.style.opacity = '0';
   }
 
   private toPct(e: number): number {
-    const pct = ((e - E_MIN) / (E_MAX - E_MIN)) * 100;
-    return Math.min(Math.max(pct, 0), 100);
+    return Math.min(Math.max(((e - E_MIN) / (E_MAX - E_MIN)) * 100, 0), 100);
   }
 
   updateScale(widthMeters: number): void {
-    this.scaleLabel.textContent = `화면 폭: ${formatLength(widthMeters)}`;
+    this.scaleLabel.textContent = formatLength(widthMeters);
   }
 
   updateGauge(e: number): void {
-    this.gaugeMarker.style.left = `${this.toPct(e)}%`;
+    const pct = this.toPct(e);
+    this.marker.style.left = `${pct}%`;
+    this.fill.style.width = `${pct}%`;
   }
 
-  showCaption(m: Milestone): void {
-    // 짧은 페이드로 전환
-    this.captionCard.classList.add('swap');
+  showCaption(c: { title: string; caption: string }): void {
+    this.lower.style.opacity = '1';
+    this.lower.classList.add('swap');
     if (this.swapTimer !== null) clearTimeout(this.swapTimer);
     this.swapTimer = window.setTimeout(() => {
-      this.captionTitle.textContent = m.title;
-      this.captionText.textContent = m.caption;
-      this.captionCard.classList.remove('swap');
+      this.chapter.textContent = c.title;
+      this.caption.textContent = c.caption;
+      this.lower.classList.remove('swap');
       this.swapTimer = null;
-    }, 180);
+    }, 260);
   }
 }

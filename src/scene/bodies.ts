@@ -53,13 +53,14 @@ interface PlanetSpec {
 }
 
 const PLANETS: PlanetSpec[] = [
-  { id: 'mercury', label: '수성', orbitAU: 0.39, angle: 2.6, radius: 2.44e6, minE: 10.3, tex: '2k_mercury.jpg', spin: 200, tint: '#bcae9e' },
-  { id: 'venus', label: '금성', orbitAU: 0.72, angle: 5.4, radius: 6.05e6, minE: 10.5, tex: '2k_venus_atmosphere.jpg', spin: 240, tint: '#f0d9a0' },
-  { id: 'mars', label: '화성', orbitAU: 1.52, angle: 0.8, radius: 3.39e6, minE: 10.7, tex: '2k_mars.jpg', spin: 62, tint: '#e0825a' },
-  { id: 'jupiter', label: '목성', orbitAU: 5.2, angle: 3.9, radius: 6.99e7, minE: 11.4, tex: '2k_jupiter.jpg', spin: 25, tint: '#e8caa4' },
-  { id: 'saturn', label: '토성', orbitAU: 9.5, angle: 1.9, radius: 5.82e7, minE: 11.7, tex: '2k_saturn.jpg', spin: 27, tint: '#ead9b0', ring: 1, ringTex: '2k_saturn_ring_alpha.png' },
-  { id: 'uranus', label: '천왕성', orbitAU: 19.2, angle: 4.7, radius: 2.54e7, minE: 12.0, tex: '2k_uranus.jpg', spin: 43, tint: '#bfe8ec' },
-  { id: 'neptune', label: '해왕성', orbitAU: 30.1, angle: 0.4, radius: 2.46e7, minE: 12.2, tex: '2k_neptune.jpg', spin: 40, tint: '#7aa3e8' },
+  // minE는 클로즈업 프레이밍 지수(약 log10(2R/0.46)) 아래로 — 투어가 가까이 가면 보이게
+  { id: 'mercury', label: '수성', orbitAU: 0.39, angle: 2.6, radius: 2.44e6, minE: 6.5, tex: '2k_mercury.jpg', spin: 200, tint: '#bcae9e' },
+  { id: 'venus', label: '금성', orbitAU: 0.72, angle: 5.4, radius: 6.05e6, minE: 6.8, tex: '2k_venus_atmosphere.jpg', spin: 240, tint: '#f0d9a0' },
+  { id: 'mars', label: '화성', orbitAU: 1.52, angle: 0.8, radius: 3.39e6, minE: 6.6, tex: '2k_mars.jpg', spin: 62, tint: '#e0825a' },
+  { id: 'jupiter', label: '목성', orbitAU: 5.2, angle: 3.9, radius: 6.99e7, minE: 7.5, tex: '2k_jupiter.jpg', spin: 25, tint: '#e8caa4' },
+  { id: 'saturn', label: '토성', orbitAU: 9.5, angle: 1.9, radius: 5.82e7, minE: 7.5, tex: '2k_saturn.jpg', spin: 27, tint: '#ead9b0', ring: 1, ringTex: '2k_saturn_ring_alpha.png' },
+  { id: 'uranus', label: '천왕성', orbitAU: 19.2, angle: 4.7, radius: 2.54e7, minE: 7.1, tex: '2k_uranus.jpg', spin: 43, tint: '#bfe8ec' },
+  { id: 'neptune', label: '해왕성', orbitAU: 30.1, angle: 0.4, radius: 2.46e7, minE: 7.1, tex: '2k_neptune.jpg', spin: 40, tint: '#7aa3e8' },
 ];
 
 /* ── 가까운 별 (실거리 기반, 각도/고도각은 입체 분포로 배치) ── */
@@ -235,7 +236,7 @@ export const BODIES: Body[] = [
     label: '태양',
     pos: SUN_POS,
     radius: 6.96e8,
-    minE: 9.5,
+    minE: 8.4,
     maxE: 18.6,
     minPixelRadius: 2.2,
     painter: 'sun',
@@ -264,7 +265,7 @@ export const BODIES: Body[] = [
     label: '달',
     pos: { x: 3.0e8, y: -2.4e8, z: 0 },
     radius: 1.737e6,
-    minE: 7.4,
+    minE: 6.3,
     maxE: 11.6,
     minPixelRadius: 0.8,
     painter: 'moon',

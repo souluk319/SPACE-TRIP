@@ -3,112 +3,108 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>우주여행 — 토리와 함께 지구에서 은하까지</title>
+    <title>우주여행 — 지구에서 우주의 끝까지</title>
     <meta
       name="description"
-      content="초등 어린이를 위한 가이드 우주여행. 안내원 토리와 함께 지구에서 은하까지 5분 동안 미션을 풀며 우주의 스케일을 배워요."
+      content="지구에서 출발해 관측 가능한 우주의 끝까지, 스케일의 여정. 실사 텍스처와 시네마틱 연출로 떠나는 우주 다큐멘터리."
     />
   </head>
   <body>
     <canvas id="space"></canvas>
     <div id="vignette"></div>
 
-    <div id="scale-panel">
-      <div id="scale-label">화면 폭: -</div>
-      <div id="gauge">
-        <div id="gauge-track"></div>
-        <div id="gauge-marker"></div>
+    <!-- 인라인 아이콘 심볼 -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="ic-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </symbol>
+      <symbol id="ic-minus" viewBox="0 0 24 24">
+        <path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </symbol>
+      <symbol id="ic-home" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <ellipse cx="12" cy="12" rx="3" ry="7" fill="none" stroke="currentColor" stroke-width="1.2" />
+        <path d="M5.2 9.6h13.6M5.2 14.4h13.6" fill="none" stroke="currentColor" stroke-width="1.2" />
+      </symbol>
+      <symbol id="ic-audio-on" viewBox="0 0 24 24">
+        <path d="M4 9.5v5h3.2L12 18V6L7.2 9.5H4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+        <path d="M15.5 9a4 4 0 0 1 0 6M17.8 7a7 7 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </symbol>
+      <symbol id="ic-audio-off" viewBox="0 0 24 24">
+        <path d="M4 9.5v5h3.2L12 18V6L7.2 9.5H4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+        <path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </symbol>
+      <symbol id="ic-settings" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6M18.4 18.4l-1.6-1.6M7.2 7.2 5.6 5.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </symbol>
+      <symbol id="ic-close" viewBox="0 0 24 24">
+        <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </symbol>
+    </svg>
+
+    <!-- 좌상단: 스케일 + 챕터 타임라인 -->
+    <div id="hud-top">
+      <div id="scale-label">—</div>
+      <div id="timeline" aria-label="여정 타임라인">
+        <div id="timeline-track"></div>
+        <div id="timeline-fill"></div>
+        <div id="timeline-marker"></div>
       </div>
     </div>
 
+    <!-- 우측 컨트롤 -->
     <div id="side-controls">
-      <button id="zoom-in" aria-label="확대">+</button>
-      <button id="zoom-out" aria-label="축소">−</button>
-      <button id="voice-toggle" aria-label="음성 안내 켜기/끄기" aria-pressed="true">🔊</button>
-      <button id="home-btn" aria-label="지구로 돌아가기">🌍</button>
-      <button id="settings-btn" aria-label="설정">⚙️</button>
+      <button id="zoom-in" aria-label="확대"><svg><use href="#ic-plus" /></svg></button>
+      <button id="zoom-out" aria-label="축소"><svg><use href="#ic-minus" /></svg></button>
+      <button id="home-btn" aria-label="지구로 돌아가기"><svg><use href="#ic-home" /></svg></button>
+      <button id="mute-btn" aria-label="소리 끄기" aria-pressed="false"><svg><use href="#ic-audio-on" /></svg></button>
+      <button id="settings-btn" aria-label="설정"><svg><use href="#ic-settings" /></svg></button>
     </div>
 
+    <!-- 하단 좌측: lower-third 내레이션 -->
+    <div id="lowerthird">
+      <div id="lt-chapter"></div>
+      <div id="lt-caption"></div>
+    </div>
+
+    <!-- 시작 오버레이 -->
+    <div id="start-overlay">
+      <div id="title-block">
+        <div id="eyebrow">A JOURNEY THROUGH SCALE</div>
+        <h1 id="title">우주여행</h1>
+        <p id="subtitle">지구에서 관측 가능한 우주의 끝까지</p>
+      </div>
+      <button id="start-btn">여행 시작</button>
+      <div id="credit">텍스처 · Solar System Scope (CC BY 4.0)</div>
+    </div>
+
+    <!-- 엔드 타이틀 -->
+    <div id="end-overlay" class="hidden">
+      <h2 id="end-title">여정의 끝</h2>
+      <p id="end-text">
+        930억 광년의 우주, 그 어딘가의 작고 푸른 점에서<br />우리의 여행은 시작되었습니다.
+      </p>
+      <button id="restart-btn">다시 여행하기</button>
+    </div>
+
+    <!-- 설정 -->
     <div id="settings-overlay" class="hidden">
       <div id="settings-card">
         <div id="settings-head">
           <h2>설정</h2>
-          <button id="settings-close" aria-label="닫기">✕</button>
+          <button id="settings-close" aria-label="닫기"><svg><use href="#ic-close" /></svg></button>
         </div>
-
         <div class="set-section">
-          <div class="set-label">토리 목소리</div>
+          <div class="set-label">내레이터 음성</div>
           <div id="voice-grid"></div>
-          <div class="set-hint">목소리를 누르면 미리 들어볼 수 있어요</div>
         </div>
-
         <div class="set-section">
-          <label class="set-toggle">
-            <span>음성 안내</span>
-            <input type="checkbox" id="set-voice" checked />
-          </label>
-          <label class="set-toggle">
-            <span>효과음</span>
-            <input type="checkbox" id="set-sfx" checked />
-          </label>
+          <label class="set-toggle"><span>음성 해설</span><input type="checkbox" id="set-voice" checked /></label>
+          <label class="set-toggle"><span>배경 음악</span><input type="checkbox" id="set-music" checked /></label>
+          <label class="set-toggle"><span>효과음</span><input type="checkbox" id="set-sfx" checked /></label>
         </div>
       </div>
-    </div>
-
-    <div id="bottom">
-      <div id="journey-progress" aria-label="여정 진행도"></div>
-      <div id="guide-panel">
-        <div id="guide-avatar">🧑‍🚀</div>
-        <div id="guide-content">
-          <div id="guide-name">우주 안내원 토리</div>
-          <div id="guide-text"></div>
-          <div id="mission-row" hidden>🚀 <span id="mission-text"></span></div>
-          <div id="quiz-box" hidden>
-            <div id="quiz-q"></div>
-            <div id="quiz-choices"></div>
-            <div id="quiz-explain" hidden></div>
-            <div id="quiz-remember" hidden></div>
-          </div>
-          <button id="journey-next" hidden>다음으로</button>
-        </div>
-      </div>
-      <div id="caption-card">
-        <div id="caption-title"></div>
-        <div id="caption-text"></div>
-      </div>
-      <nav id="chips" aria-label="구간 이동"></nav>
-    </div>
-
-    <div id="badge-toast" aria-live="polite"></div>
-
-    <div id="complete-overlay" class="hidden">
-      <h2>오늘의 우주여행 완료 🎉</h2>
-      <p>오늘 얻은 우주 배지</p>
-      <ul id="learned-list"></ul>
-      <div id="complete-actions">
-        <button id="restart-btn">다시 여행하기</button>
-        <button id="explore-btn">자유롭게 탐험하기</button>
-      </div>
-    </div>
-
-    <div id="start-overlay">
-      <div id="invite-wordmark">우주여행</div>
-      <div id="invite-bubble">
-        <span id="invite-text"></span>
-        <span id="invite-hint">탭해서 계속 ▸</span>
-      </div>
-      <div id="invite-tori"></div>
-      <button id="start-btn">출발하기</button>
-      <small>지구에서 은하까지 5분 여행</small>
-      <small class="credit-line">행성 텍스처: Solar System Scope (CC BY 4.0)</small>
-    </div>
-
-    <div id="credit">
-      텍스처:
-      <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener"
-        >Solar System Scope</a
-      >
-      (CC BY 4.0)
     </div>
 
     <script type="module" src="/src/main.ts"></script>

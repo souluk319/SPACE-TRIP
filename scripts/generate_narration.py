@@ -1,14 +1,12 @@
-"""우주여행 내레이션 음성 생성 (Supertonic 3 — 오픈소스 온디바이스 TTS).
+"""우주여행 내레이션 음성 생성 — 다큐멘터리 톤 (Supertonic 3).
 
-10개 보이스(M1~M5, F1~F5)를 모두 생성해 설정에서 런타임 전환할 수 있게 한다.
-핵심 장면 대사는 세그먼트별로 톤(점잖게/속삭이듯/강하게)을 섞어 다이내믹하게 합성한다.
+10개 보이스(M1~M5, F1~F5)로 10개 구간 해설 + 미리듣기 샘플을 차분한 페이스로 생성.
+유아용 가이드 대사(j-*)는 폐기 — milestone 해설만 사용한다.
 
 사용법:
-    python -m venv .venv && .venv/bin/pip install supertonic soundfile
-    .venv/bin/python scripts/generate_narration.py
-
+    /tmp/supertonic-venv/bin/python scripts/generate_narration.py
 출력: public/audio/<voice>/<id>.wav  (빌드 전 afconvert로 .m4a 변환)
-텍스트 원본: src/scene/milestones.ts + src/journey/stages.ts + main.ts 오프닝
+텍스트 원본: src/scene/milestones.ts 의 narration 필드 (수정 시 함께 갱신)
 """
 
 from pathlib import Path
@@ -16,101 +14,42 @@ from pathlib import Path
 import numpy as np
 from supertonic import TTS
 
-# ── 단일 톤 대사 (자유 탐험 구간 + 가이드 설명) ──
 NARRATIONS = {
-    "earth": "여기는 우리의 고향, 지구입니다. 지름은 약 1만 2천 7백 킬로미터로, 표면의 70퍼센트가 바다로 덮여 있어요. 이제 천천히 멀어지며 우주로 떠나볼까요?",
-    "earth-moon": "지구와 달이 함께 보입니다. 달은 지구에서 약 38만 킬로미터 떨어져 있어요. 빛의 속도로도 1.3초가 걸리는 거리입니다.",
-    "inner-planets": "태양과 가까운 안쪽 행성들입니다. 수성, 금성, 지구, 화성이 태양 주위를 돌고 있어요. 지구와 태양 사이 거리는 약 1억 5천만 킬로미터로, 이것을 1 천문단위라고 부릅니다.",
-    "solar-system": "태양계 전체가 한눈에 들어옵니다. 가장 바깥 행성인 해왕성은 태양에서 지구보다 30배나 멀리 떨어져 있어요.",
-    "kuiper": "해왕성 너머에는 카이퍼대라는 얼음 천체들의 고리가 펼쳐져 있습니다. 명왕성도 이곳에 살고 있어요. 1977년에 떠난 보이저 1호는 이 부근을 지나 성간 공간을 날고 있습니다.",
-    "oort": "태양계를 거대한 공처럼 감싸고 있는 오르트 구름입니다. 혜성들의 고향으로, 그 끝은 1광년 넘는 곳까지 뻗어 있다고 추정돼요.",
-    "nearby-stars": "태양을 떠나 이웃 별들 사이로 나왔습니다. 가장 가까운 별 프록시마 센타우리까지는 4.2광년, 빛으로도 4년 넘게 걸리는 거리예요.",
-    "milky-way": "수천억 개의 별이 모인 우리은하, 은하수입니다. 지름은 약 10만 광년이에요. 태양은 은하 중심에서 2만 6천 광년 떨어진 나선팔에 자리잡고 있습니다.",
-    "local-group": "우리은하와 이웃 은하들이 모인 국부은하군입니다. 250만 광년 떨어진 안드로메다은하는 우리은하와 점점 가까워지고 있어요.",
-    "universe": "관측 가능한 우주의 끝에 도달했습니다. 지름은 약 930억 광년이고, 은하들이 거미줄처럼 얽힌 거대한 구조를 이루고 있어요. 이 광활한 우주 어딘가, 작고 푸른 지구에서 우리의 여행이 시작되었습니다.",
-    "j-s1": "달은 가까워 보이지만 사실 엄청 멀어! 빛도 1.3초나 걸린다? 좋아, 달까지 가보자!",
-    "j-e1": "달은 지구의 4분의 1 크기야. 지구가 훨씬 크지! 그런데도 밤하늘에 크게 보이는 건 가까운 편이라서야.",
-    "j-s2": "우와, 태양계 도착! 태양 주위를 행성들이 빙글빙글 돌고 있어. 화성과 목성, 찾을 수 있겠어?",
-    "j-e2": "정답은 목성! 지구가 1,300개나 들어갈 만큼 큰 행성이야.",
-    "j-s3": "보이저 1호는 1977년에 지구를 떠나서 아직도 날아가는 중이야. 어디까지 갔을까? 같이 찾아보자!",
-    "j-t3": "탐사선도 멀리 갔지만, 별까지는 훨씬 더 멀어! 별들 사이로 나가보자!",
-    "j-e3": "맞아, 태양도 별이야! 밤하늘의 별들도 태양처럼 빛나고 있는데, 너무 멀어서 작게 보이는 거야.",
-    "j-s4": "여기가 바로 우리은하! 태양 같은 별이 수천억 개나 모여 있어. 진짜 멋지지?",
-    "j-e4": "은하는 수많은 별들의 모임이야! 우리 태양도 그중 하나란다.",
-    "sample": "안녕! 나는 우주 안내원 토리야. 나랑 같이 우주여행 떠나볼래?",
+    "earth": "푸른 행성, 지구입니다. 지름은 약 1만 2천 7백 킬로미터. 표면의 7할을 덮은 바다가 별빛을 되비춥니다. 우리의 여정은 이곳에서 시작됩니다.",
+    "earth-moon": "지구의 곁을 도는 달. 그 거리는 약 38만 킬로미터, 빛의 속도로도 1.3초가 걸립니다. 가까워 보이지만, 이것이 우주의 첫 간격입니다.",
+    "inner-planets": "태양에 가까운 네 행성, 수성과 금성, 지구와 화성이 궤도를 그립니다. 지구에서 태양까지의 1억 5천만 킬로미터, 이 거리를 1천문단위라 부릅니다.",
+    "solar-system": "태양계 전체가 한 시야에 들어옵니다. 가장 바깥을 도는 해왕성은 태양에서 30천문단위, 지구의 서른 배 너머에 있습니다.",
+    "kuiper": "해왕성 너머, 얼음 천체들이 띠를 이루는 카이퍼대입니다. 명왕성의 자리도 이곳입니다. 1977년 지구를 떠난 보이저 1호는 이 영역을 지나 성간 공간으로 향하고 있습니다.",
+    "oort": "태양계를 거대한 구처럼 에워싼 오르트 구름. 혜성이 태어나는 곳이며, 그 바깥 경계는 1광년 너머에 이른다고 추정됩니다.",
+    "nearby-stars": "태양을 뒤로하고, 이웃한 별들 사이에 들어섭니다. 가장 가까운 프록시마 센타우리조차 4.2광년, 빛으로도 4년이 넘는 거리입니다.",
+    "milky-way": "수천억 개의 별이 모여 빚어낸 나선, 우리은하입니다. 지름은 약 10만 광년. 태양은 그 중심에서 2만 6천 광년 떨어진 나선팔의 한 점에 지나지 않습니다.",
+    "local-group": "우리은하와 이웃 은하들이 중력으로 묶인 국부은하군입니다. 250만 광년 밖의 안드로메다는 지금 이 순간에도 우리를 향해 다가오고 있습니다.",
+    "universe": "관측 가능한 우주의 끝입니다. 지름은 약 930억 광년, 은하들은 거미줄처럼 얽혀 거대한 구조를 이룹니다. 이 광막한 우주의 한 점, 작고 푸른 행성에서 우리의 여정은 시작되었습니다.",
+    "sample": "지구에서 출발해, 관측 가능한 우주의 끝까지. 스케일의 여정을 함께 떠납니다.",
 }
 
-# ── 다이내믹 톤 대사 (핵심 장면) — (텍스트, 톤) 세그먼트 ──
-# 톤: calm(점잖게) / whisper(속삭이듯) / strong(강하게)
-DYNAMIC = {
-    "j-open1": [("안녕,", "calm"), ("우주여행은 처음이지?", "strong")],
-    "j-open2": [("오늘은 지구에서 출발해서", "calm"), ("은하까지 가볼 거야.", "strong")],
-    "j-open3": [("걱정 마.", "whisper"), ("내가 길을 알려줄게.", "strong")],
-    "j-q1": [("여기서 퀴즈!", "strong"), ("달은 지구보다 클까,", "calm"), ("작을까?", "whisper")],
-    "j-q2": [("퀴즈 시간!", "strong"), ("태양계에서 가장 큰 행성은", "calm"), ("무엇일까?", "whisper")],
-    "j-q3": [("별들 사이로 나왔어!", "strong"), ("그런데 궁금한 게 있어.", "calm"), ("태양도 별일까?", "whisper")],
-    "j-q4": [("마지막 퀴즈!", "strong"), ("은하는 별 하나일까,", "calm"), ("별들의 모임일까?", "whisper")],
-    "j-correct": [("정답!", "strong"), ("너 방금 우주 지식 하나 얻었어!", "calm")],
-    "j-wrong": [("괜찮아,", "calm"), ("틀려도 우주는 도망 안 가!", "strong")],
-    "j-f-mars": [("찾았다!", "strong"), ("저게 화성이야.", "calm")],
-    "j-f-jupiter": [("목성 발견!", "strong"), ("태양계에서 제일 큰 형님이지.", "calm")],
-    "j-f-voyager1": [("보이저 1호 발견!", "strong"), ("엄청 멀리 왔어.", "calm")],
-    "j-complete": [
-        ("오늘의 우주여행 완료!", "strong"),
-        ("달, 태양계, 보이저, 우리은하까지 전부 가봤어.", "calm"),
-        ("우주는 정말 크지?", "whisper"),
-        ("또 놀러 와!", "strong"),
-    ],
-}
-
-TONE = {
-    "calm": {"speed": 1.08, "gain": 1.0},
-    "whisper": {"speed": 0.94, "gain": 0.5},
-    "strong": {"speed": 1.22, "gain": 1.0},
-}
-BASE_SPEED = 1.15
-STEPS = 10
+SPEED = 1.0  # 차분한 다큐 페이스 (들뜬 1.15 폐기)
+STEPS = 12
 VOICES = ["F1", "F2", "F3", "F4", "F5", "M1", "M2", "M3", "M4", "M5"]
 
 
 def to_wave(out) -> np.ndarray:
-    """synthesize 반환값을 1D float 배열로 정규화."""
     return np.asarray(out[0] if isinstance(out, tuple) else out, dtype=np.float32).reshape(-1)
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parent.parent
-    audio_root = root / "public" / "audio"
-
+    audio_root = Path(__file__).resolve().parent.parent / "public" / "audio"
     tts = TTS(auto_download=True)
-    sr = int(getattr(tts, "sample_rate", getattr(tts, "sr", 44100)))
-    gap = np.zeros(int(sr * 0.13), dtype=np.float32)  # 세그먼트 사이 짧은 호흡
-
     for v in VOICES:
         style = tts.get_voice_style(voice_name=v)
         vdir = audio_root / v
         vdir.mkdir(parents=True, exist_ok=True)
-
         for mid, text in NARRATIONS.items():
             wav, _ = tts.synthesize(
-                text=text, voice_style=style, lang="ko", total_steps=STEPS, speed=BASE_SPEED
+                text=text, voice_style=style, lang="ko", total_steps=STEPS, speed=SPEED
             )
             tts.save_audio(to_wave(wav), str(vdir / f"{mid}.wav"))
-
-        for mid, segments in DYNAMIC.items():
-            parts = []
-            for i, (text, tone) in enumerate(segments):
-                p = TONE[tone]
-                seg, _ = tts.synthesize(
-                    text=text, voice_style=style, lang="ko", total_steps=STEPS, speed=p["speed"]
-                )
-                w = to_wave(seg) * p["gain"]
-                if i > 0:
-                    parts.append(gap)
-                parts.append(w)
-            tts.save_audio(np.concatenate(parts), str(vdir / f"{mid}.wav"))
-
-        print(f"voice {v} done ({len(NARRATIONS) + len(DYNAMIC)} clips)")
+        print(f"voice {v} done ({len(NARRATIONS)} clips)")
 
 
 if __name__ == "__main__":

@@ -1,16 +1,14 @@
 import type { Camera } from '../core/camera';
 import type { Narrator } from '../audio/narrator';
 import { sfx } from '../audio/sfx';
-import type { Milestone } from '../scene/types';
+import { ambient } from '../audio/ambient';
 
+/** 줌 버튼(홀드) + 마스터 음소거 토글 */
 export class Controls {
   /** 줌 버튼을 누르고 있는 방향 (-1 확대 / +1 축소 / 0). 메인 루프가 dt와 곱해 적용 */
   holdDir = 0;
 
-  private chipsEl = document.getElementById('chips')!;
-  private chipById = new Map<string, HTMLButtonElement>();
-
-  constructor(camera: Camera, narrator: Narrator, milestones: Milestone[], onGesture: () => void) {
+  constructor(_camera: Camera, narrator: Narrator, onGesture: () => void) {
     const bindHold = (id: string, dir: number) => {
       const btn = document.getElementById(id)!;
       const start = (ev: Event) => {
@@ -25,41 +23,25 @@ export class Controls {
       btn.addEventListener('pointerup', stop);
       btn.addEventListener('pointerleave', stop);
       btn.addEventListener('pointercancel', stop);
-      // 버튼 밖에서 손을 떼도 확실히 멈추는 백스톱
       window.addEventListener('pointerup', stop);
       window.addEventListener('blur', stop);
     };
     bindHold('zoom-in', -1);
     bindHold('zoom-out', 1);
 
-    const voiceBtn = document.getElementById('voice-toggle')!;
-    voiceBtn.addEventListener('click', () => {
+    // 마스터 음소거 (음성·음악·효과음 전부)
+    const muteBtn = document.getElementById('mute-btn')!;
+    const use = muteBtn.querySelector('use')!;
+    let muted = false;
+    muteBtn.addEventListener('click', () => {
       onGesture();
-      const on = !narrator.enabled;
-      narrator.setEnabled(on);
-      sfx.enabled = on;
-      voiceBtn.setAttribute('aria-pressed', String(on));
-      voiceBtn.textContent = on ? '🔊' : '🔇';
+      muted = !muted;
+      narrator.setEnabled(!muted);
+      sfx.enabled = !muted;
+      ambient.setEnabled(!muted);
+      muteBtn.setAttribute('aria-pressed', String(muted));
+      muteBtn.setAttribute('aria-label', muted ? '소리 켜기' : '소리 끄기');
+      use.setAttribute('href', muted ? '#ic-audio-off' : '#ic-audio-on');
     });
-
-    for (const m of milestones) {
-      const chip = document.createElement('button');
-      chip.className = 'chip';
-      chip.textContent = m.title;
-      chip.addEventListener('click', () => {
-        onGesture();
-        camera.jumpTo(m.enterE + 0.4);
-      });
-      this.chipsEl.appendChild(chip);
-      this.chipById.set(m.id, chip);
-    }
-  }
-
-  highlight(milestoneId: string): void {
-    for (const [id, chip] of this.chipById) {
-      const active = id === milestoneId;
-      chip.classList.toggle('active', active);
-      if (active) chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
   }
 }

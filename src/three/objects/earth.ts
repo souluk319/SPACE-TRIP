@@ -93,47 +93,6 @@ function makeSurfaceMaterial(alpha: AlphaGroup): THREE.ShaderMaterial {
   return mat;
 }
 
-/** 대기 프레넬 림 (BackSide 헤일로) */
-function makeAtmosphereMaterial(alpha: AlphaGroup): THREE.ShaderMaterial {
-  const mat = new THREE.ShaderMaterial({
-    uniforms: {
-      uColor: { value: new THREE.Color('#6eb4ff') },
-      opacity: { value: 1 },
-    },
-    vertexShader: /* glsl */ `
-      #include <common>
-      #include <logdepthbuf_pars_vertex>
-      varying float vF;
-      void main() {
-        vec3 n = normalize(normalMatrix * normal);
-        vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        vec3 v = normalize(-mv.xyz);
-        vF = pow(1.0 - abs(dot(n, v)), 2.6);
-        gl_Position = projectionMatrix * mv;
-        #include <logdepthbuf_vertex>
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      #include <common>
-      #include <logdepthbuf_pars_fragment>
-      uniform vec3 uColor;
-      uniform float opacity;
-      varying float vF;
-      void main() {
-        #include <logdepthbuf_fragment>
-        gl_FragColor = vec4(uColor, vF * opacity);
-      }
-    `,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    side: THREE.BackSide,
-    depthWrite: false,
-  });
-  bindOpacityUniform(mat);
-  alpha.add(mat, 0.9);
-  return mat;
-}
-
 export function buildEarth(body: Body): WorldObject {
   const root = new THREE.Group();
   const alpha = new AlphaGroup();
@@ -156,9 +115,6 @@ export function buildEarth(body: Body): WorldObject {
   clouds.visible = false; // alphaMap 로드 후 표시
   root.add(clouds);
 
-  const atmo = new THREE.Mesh(SPHERE_HI, makeAtmosphereMaterial(alpha));
-  atmo.scale.setScalar(1.055);
-  root.add(atmo);
 
   // 지구 자전축 기울기 23.4°
   root.rotation.z = 0.41;

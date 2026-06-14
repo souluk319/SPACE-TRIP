@@ -5,22 +5,41 @@ import { PARTICLE_SCALE } from './stage';
 
 const SKY_RADIUS = 4.5e4;
 
+/** 별 색온도 팔레트 (청백 우세 + 소수의 황·적색 거성) */
+const STAR_TEMPS: [number, number, number][] = [
+  [0.78, 0.85, 1.0], // 청백
+  [0.88, 0.92, 1.0],
+  [1.0, 1.0, 1.0], // 백색
+  [1.0, 0.98, 0.92],
+  [1.0, 0.93, 0.78], // 황백
+  [1.0, 0.82, 0.62], // 주황
+  [1.0, 0.7, 0.55], // 적색 거성
+];
+
 function makeStarLayer(seed: number, size: number, count: number): THREE.Points {
   const rand = mulberry32(seed);
   const pos = new Float32Array(count * 3);
+  const col = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const u = rand() * 2 - 1;
     const ph = rand() * Math.PI * 2;
     const s = Math.sqrt(1 - u * u);
-    const r = 2.2e4 + rand() * 1.6e4;
+    const r = 2.2e4 + rand() * 1.7e4;
     pos[i * 3] = s * Math.cos(ph) * r;
     pos[i * 3 + 1] = u * r;
     pos[i * 3 + 2] = s * Math.sin(ph) * r;
+    // 색온도 — 청백에 가중 (낮은 인덱스), 가끔 따뜻한 색
+    const t = STAR_TEMPS[Math.floor(Math.pow(rand(), 1.7) * STAR_TEMPS.length)];
+    const b = 0.6 + rand() * 0.4;
+    col[i * 3] = t[0] * b;
+    col[i * 3 + 1] = t[1] * b;
+    col[i * 3 + 2] = t[2] * b;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
   const mat = new THREE.PointsMaterial({
-    color: '#dce6ff',
+    vertexColors: true,
     size,
     sizeAttenuation: false,
     transparent: true,
@@ -40,8 +59,7 @@ function makeStarLayer(seed: number, size: number, count: number): THREE.Points 
 export class Environment {
   private sky: THREE.Mesh;
   private skyMat: THREE.MeshBasicMaterial;
-  private layer1: THREE.Points;
-  private layer2: THREE.Points;
+  private layers: THREE.Points[] = [];
   private deepField: Array<{ mat: THREE.SpriteMaterial; base: number }> = [];
   private deepGroup = new THREE.Group();
 
@@ -58,9 +76,15 @@ export class Environment {
     this.sky.renderOrder = -10;
     scene.add(this.sky);
 
-    this.layer1 = makeStarLayer(11, 1.6, 700);
-    this.layer2 = makeStarLayer(22, 2.4, 500);
-    scene.add(this.layer1, this.layer2);
+    // 4레이어 — 크기·밀도 다양 + 위상 분산 트윈클
+    const ps = Math.max(PARTICLE_SCALE, 0.5);
+    this.layers = [
+      makeStarLayer(11, 1.0, Math.round(2600 * ps)),
+      makeStarLayer(22, 1.5, Math.round(1500 * ps)),
+      makeStarLayer(33, 2.2, Math.round(650 * ps)),
+      makeStarLayer(44, 3.0, Math.round(220 * ps)),
+    ];
+    for (const l of this.layers) scene.add(l);
 
     // 딥필드 — 거대 스케일에서 페이드인되는 원거리 은하들 (허블 딥필드 느낌)
     const rand = mulberry32(404);
@@ -99,9 +123,10 @@ export class Environment {
     this.sky.rotation.y += dt * 0.0008;
 
     const tri = (u: number) => 1 - Math.abs(2 * (u - Math.floor(u)) - 1);
-    const phase = (e * 0.45) % 1;
-    (this.layer1.material as THREE.PointsMaterial).opacity = 0.2 + 0.6 * tri(phase);
-    (this.layer2.material as THREE.PointsMaterial).opacity = 0.2 + 0.6 * tri(phase + 0.5);
+    const phase = (e * 0.4) % 1;
+    this.layers.forEach((l, i) => {
+      (l.material as THREE.PointsMaterial).opacity = 0.32 + 0.55 * tri(phase + i * 0.27);
+    });
 
     // 딥필드는 은하 스케일부터
     const deep = smoothstep(20.2, 21.6, e);

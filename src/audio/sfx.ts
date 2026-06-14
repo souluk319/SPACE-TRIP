@@ -1,79 +1,91 @@
 /**
- * WebAudio 합성 효과음 — 파일 0개.
- * 짧고 부드러운 신호음만: 발견 pop / 정답 아르페지오 / 오답 low boop /
- * 스테이지 전환 swell / 배지 sparkle. 사용자 제스처 전에는 재생되지 않는다
- * (AudioContext가 suspended 상태로 시작 → resume는 제스처 이후에만 성공).
+ * 디자인된 UI 사운드 (WebAudio 합성, 에셋 0).
+ * 게임 효과음 대신 차분한 시네마틱 신호음: 챕터 전환 whoosh + soft tick.
+ * 사용자 제스처 이후에만 재생.
  */
 class Sfx {
   enabled = true;
   private ctx: AudioContext | null = null;
+  private reverb: ConvolverNode | null = null;
 
   private ensure(): AudioContext | null {
     if (!this.enabled) return null;
     if (!this.ctx) {
-      try {
-        this.ctx = new AudioContext();
-      } catch {
-        return null;
+      const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctor) return null;
+      this.ctx = new Ctor();
+      const rate = this.ctx.sampleRate;
+      const len = Math.floor(rate * 1.4);
+      const buf = this.ctx.createBuffer(2, len, rate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = buf.getChannelData(ch);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
       }
+      this.reverb = this.ctx.createConvolver();
+      this.reverb.buffer = buf;
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
     return this.ctx;
   }
 
-  /** freq에서 시작해 (옵션) freqEnd로 미끄러지는 단일 톤 */
-  private tone(
-    freq: number,
-    startIn: number,
-    dur: number,
-    opts: { type?: OscillatorType; gain?: number; freqEnd?: number } = {},
-  ): void {
+  /** 챕터 전환 — 필터드 노이즈 스윕 whoosh */
+  transition(): void {
     const ctx = this.ensure();
     if (!ctx) return;
-    const t0 = ctx.currentTime + startIn;
-    const osc = ctx.createOscillator();
+    const t0 = ctx.currentTime;
+    const dur = 1.1;
+    const len = Math.floor(ctx.sampleRate * dur);
+    const noise = ctx.createBufferSource();
+    const nb = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = nb.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    noise.buffer = nb;
+
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 1.4;
+    bp.frequency.setValueAtTime(280, t0);
+    bp.frequency.exponentialRampToValueAtTime(1400, t0 + dur * 0.5);
+    bp.frequency.exponentialRampToValueAtTime(220, t0 + dur);
+
     const g = ctx.createGain();
-    osc.type = opts.type ?? 'sine';
-    osc.frequency.setValueAtTime(freq, t0);
-    if (opts.freqEnd) osc.frequency.exponentialRampToValueAtTime(opts.freqEnd, t0 + dur);
-    const peak = opts.gain ?? 0.15;
     g.gain.setValueAtTime(0, t0);
-    g.gain.linearRampToValueAtTime(peak, t0 + 0.015);
+    g.gain.linearRampToValueAtTime(0.09, t0 + 0.25);
     g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-    osc.connect(g).connect(ctx.destination);
+
+    noise.connect(bp).connect(g);
+    g.connect(ctx.destination);
+    if (this.reverb) {
+      const wet = ctx.createGain();
+      wet.gain.value = 0.5;
+      g.connect(this.reverb).connect(wet).connect(ctx.destination);
+    }
+    noise.start(t0);
+    noise.stop(t0 + dur + 0.05);
+  }
+
+  /** 부드러운 reverbed tick (UI 확인음) */
+  tick(): void {
+    const ctx = this.ensure();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(660, t0);
+    osc.frequency.exponentialRampToValueAtTime(420, t0 + 0.12);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(0.07, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    if (this.reverb) {
+      const wet = ctx.createGain();
+      wet.gain.value = 0.35;
+      g.connect(this.reverb).connect(wet).connect(ctx.destination);
+    }
     osc.start(t0);
-    osc.stop(t0 + dur + 0.05);
-  }
-
-  /** 타깃 발견 — 경쾌한 pop 두 번 */
-  found(): void {
-    this.tone(660, 0, 0.12, { type: 'triangle', gain: 0.18 });
-    this.tone(990, 0.09, 0.16, { type: 'triangle', gain: 0.16 });
-  }
-
-  /** 정답 — 상승 아르페지오 (C-E-G) */
-  correct(): void {
-    this.tone(523, 0, 0.18, { type: 'triangle', gain: 0.16 });
-    this.tone(659, 0.1, 0.18, { type: 'triangle', gain: 0.16 });
-    this.tone(784, 0.2, 0.3, { type: 'triangle', gain: 0.18 });
-  }
-
-  /** 오답 — 부드러운 low boop (벌칙 느낌 없이) */
-  wrong(): void {
-    this.tone(220, 0, 0.25, { type: 'sine', gain: 0.13, freqEnd: 180 });
-  }
-
-  /** 스테이지 전환 — 낮게 차오르는 swell */
-  transition(): void {
-    this.tone(180, 0, 0.55, { type: 'sine', gain: 0.1, freqEnd: 420 });
-    this.tone(360, 0.1, 0.5, { type: 'sine', gain: 0.06, freqEnd: 840 });
-  }
-
-  /** 배지 획득 — sparkle */
-  badge(): void {
-    this.tone(880, 0, 0.14, { type: 'triangle', gain: 0.14 });
-    this.tone(1175, 0.09, 0.14, { type: 'triangle', gain: 0.13 });
-    this.tone(1568, 0.18, 0.32, { type: 'triangle', gain: 0.15 });
+    osc.stop(t0 + 0.24);
   }
 }
 

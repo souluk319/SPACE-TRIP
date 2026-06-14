@@ -12,8 +12,8 @@ export const VOICE_OPTIONS = [
   { id: 'M5', label: '남성 5' },
 ];
 
-const VOICE_KEY = 'tori-voice';
-const DEFAULT_VOICE = 'F1';
+const VOICE_KEY = 'st-narrator-voice';
+const DEFAULT_VOICE = 'F3';
 
 /**
  * 내레이터 — Supertonic 3(오픈소스 온디바이스 TTS)로 사전 생성한
