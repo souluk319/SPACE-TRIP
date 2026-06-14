@@ -20,8 +20,12 @@ import { LabelLayer } from './three/labels';
 import { sunDirUniform } from './three/objects/earth';
 import { CinematicTour } from './cinematic/tour';
 import { TOUR_STOPS } from './cinematic/stops';
+import { preloadBodyTextures } from './three/textures';
 
 const canvas = document.getElementById('space') as HTMLCanvasElement;
+
+// 행성 텍스처를 즉시 받기 시작 (타이틀·인트로 동안 다운로드 완료)
+preloadBodyTextures();
 
 const stage = new Stage(canvas);
 const world = new World(stage.scene);

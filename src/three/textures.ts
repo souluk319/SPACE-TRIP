@@ -15,6 +15,26 @@ export function getTexture(name: string, srgb = true, anisotropy = 4): THREE.Tex
   return tex;
 }
 
+/** 투어 천체 텍스처를 시작 시 미리 받아 둔다 (느린 회선에서 행성이 늦게 뜨는 문제 방지) */
+export function preloadBodyTextures(): void {
+  const names = [
+    '2k_earth_daymap.jpg',
+    '2k_earth_nightmap.jpg',
+    '2k_earth_clouds.jpg',
+    '2k_moon.jpg',
+    '2k_mercury.jpg',
+    '2k_venus_atmosphere.jpg',
+    '2k_mars.jpg',
+    '2k_jupiter.jpg',
+    '2k_saturn.jpg',
+    '2k_saturn_ring_alpha.png',
+    '2k_uranus.jpg',
+    '2k_neptune.jpg',
+    '2k_sun.jpg',
+  ];
+  for (const n of names) getTexture(n);
+}
+
 let spikeTex: THREE.CanvasTexture | null = null;
 
 /** 별용 — 글로우 + 4방향 회절 스파이크 (100,000 Stars 스타일) */

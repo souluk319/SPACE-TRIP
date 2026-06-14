@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import type { Body } from '../../scene/types';
 import { getTexture } from '../textures';
-import { IS_MOBILE } from '../stage';
 import { AlphaGroup, SPHERE_HI, makeDot, type WorldObject } from './common';
 
 /** 메인 루프가 매 프레임 갱신 — 지구→태양 방향 (씬 월드 좌표, 정규화) */
@@ -132,9 +131,9 @@ export function buildEarth(body: Body): WorldObject {
     warm: () => {
       if (warmed) return;
       warmed = true;
-      const res = IS_MOBILE ? '2k' : '8k';
-      surfaceMat.uniforms.uDay.value = getTexture(`${res}_earth_daymap.jpg`, true, 8);
-      surfaceMat.uniforms.uNight.value = getTexture(`${res}_earth_nightmap.jpg`, true, 8);
+      // 2K로 통일 — 8K(7.6MB)는 느린 회선에서 다른 행성 텍스처를 가로막는다
+      surfaceMat.uniforms.uDay.value = getTexture('2k_earth_daymap.jpg', true, 8);
+      surfaceMat.uniforms.uNight.value = getTexture('2k_earth_nightmap.jpg', true, 8);
       surfaceMat.uniforms.uHasTex.value = 1;
       cloudMat.alphaMap = getTexture('2k_earth_clouds.jpg', false);
       cloudMat.needsUpdate = true;
