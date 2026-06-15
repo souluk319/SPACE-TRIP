@@ -656,14 +656,23 @@ body.tour-paused #resume-pill {
     height: 38px;
   }
 
+  /* 모바일: 자막 위 → 내비 아래로 세로 배치 (겹침 방지) */
   #lowerthird {
     left: 16px;
     right: 16px;
-    bottom: 22px;
+    bottom: 84px;
     max-width: none;
   }
 
   #lt-caption {
-    font-size: 14px;
+    font-size: 13.5px;
+  }
+
+  #tour-nav {
+    bottom: 20px;
+  }
+
+  #resume-pill {
+    bottom: 76px;
   }
 }
