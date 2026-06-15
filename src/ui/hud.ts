@@ -1,5 +1,3 @@
-import { E_MIN, E_MAX } from '../core/camera';
-import type { Milestone } from '../scene/types';
 import { formatLength } from './format';
 
 /** 스케일 표시 + 챕터 타임라인 + lower-third 내레이션 자막 */
@@ -11,32 +9,30 @@ export class Hud {
   private lower = document.getElementById('lowerthird')!;
   private chapter = document.getElementById('lt-chapter')!;
   private caption = document.getElementById('lt-caption')!;
+  private navIdx = document.getElementById('nav-idx')!;
+  private navTotal = document.getElementById('nav-total')!;
   private swapTimer: number | null = null;
 
-  constructor(milestones: Milestone[], onJump: (m: Milestone) => void) {
-    for (const m of milestones) {
-      const notch = document.createElement('button');
+  constructor(stops: number) {
+    // 챕터 수만큼 균등 분할 눈금
+    for (let i = 0; i < stops; i++) {
+      const notch = document.createElement('div');
       notch.className = 'timeline-notch';
-      notch.title = m.title;
-      notch.setAttribute('aria-label', `${m.title}(으)로 이동`);
-      notch.style.left = `${this.toPct(m.enterE)}%`;
-      notch.addEventListener('click', () => onJump(m));
+      notch.style.left = `${stops > 1 ? (i / (stops - 1)) * 100 : 0}%`;
       this.timeline.appendChild(notch);
     }
-    // 시작 시 자막 숨김
     this.lower.style.opacity = '0';
-  }
-
-  private toPct(e: number): number {
-    return Math.min(Math.max(((e - E_MIN) / (E_MAX - E_MIN)) * 100, 0), 100);
   }
 
   updateScale(widthMeters: number): void {
     this.scaleLabel.textContent = formatLength(widthMeters);
   }
 
-  updateGauge(e: number): void {
-    const pct = this.toPct(e);
+  /** 챕터 진행도 (천체 idx/total) — 타임라인을 균등 분할로 갱신 */
+  updateChapter(idx: number, total: number): void {
+    this.navIdx.textContent = String(idx + 1);
+    this.navTotal.textContent = String(total);
+    const pct = total > 1 ? (idx / (total - 1)) * 100 : 0;
     this.marker.style.left = `${pct}%`;
     this.fill.style.width = `${pct}%`;
   }

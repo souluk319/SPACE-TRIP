@@ -41,6 +41,18 @@
       <symbol id="ic-close" viewBox="0 0 24 24">
         <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
       </symbol>
+      <symbol id="ic-prev" viewBox="0 0 24 24">
+        <path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="ic-next" viewBox="0 0 24 24">
+        <path d="M9.5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="ic-play" viewBox="0 0 24 24">
+        <path d="M8 5.5v13l11-6.5z" fill="currentColor" />
+      </symbol>
+      <symbol id="ic-pause" viewBox="0 0 24 24">
+        <path d="M8.5 5.5v13M15.5 5.5v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </symbol>
     </svg>
 
     <!-- 좌상단: 스케일 + 챕터 타임라인 -->
@@ -67,6 +79,17 @@
       <div id="lt-chapter"></div>
       <div id="lt-caption"></div>
     </div>
+
+    <!-- 하단 중앙: 챕터 내비게이션 -->
+    <div id="tour-nav">
+      <button id="nav-prev" aria-label="이전 천체"><svg><use href="#ic-prev" /></svg></button>
+      <button id="nav-play" aria-label="일시정지 / 재생"><svg><use href="#ic-pause" /></svg></button>
+      <button id="nav-next" aria-label="다음 천체"><svg><use href="#ic-next" /></svg></button>
+      <div id="nav-chapter"><span id="nav-idx">1</span> / <span id="nav-total">17</span></div>
+    </div>
+
+    <!-- 일시정지 시: 계속 듣기 -->
+    <button id="resume-pill"><svg><use href="#ic-play" /></svg> 여정 계속</button>
 
     <!-- 시작 오버레이 -->
     <div id="start-overlay">

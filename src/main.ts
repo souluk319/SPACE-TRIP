@@ -53,10 +53,7 @@ const onGesture = () => {
   tour.notifyInput(camera);
 };
 
-const hud = new Hud(MILESTONES, (m) => {
-  onGesture();
-  camera.jumpTo(m.enterE + 0.4);
-});
+const hud = new Hud(TOUR_STOPS.length);
 const controls = new Controls(camera, narrator, onGesture);
 new Settings(narrator, onGesture);
 
@@ -87,9 +84,38 @@ tour.beginIntro(camera);
 
 tour.onStop = (stop) => {
   hud.showCaption(stop);
+  hud.updateChapter(tour.index, tour.total);
   narrator.requestNarration(stop.id, stop.narration);
   if (started) sfx.transition();
 };
+// 내레이션이 끝나면 투어가 여운 뒤 다음으로
+narrator.onNarrationEnd = () => tour.notifyNarrationEnd();
+
+const playUse = document.getElementById('nav-play')!.querySelector('use')!;
+tour.onPauseChange = (paused) => {
+  document.body.classList.toggle('tour-paused', paused);
+  playUse.setAttribute('href', paused ? '#ic-play' : '#ic-pause');
+};
+
+// 챕터 내비 (‹ ⏯ ›) + 계속 듣기
+const resumeAll = () => {
+  narrator.unlock();
+  ambient.start();
+  tour.resume(camera);
+};
+document.getElementById('nav-prev')!.addEventListener('click', () => {
+  resumeAll();
+  tour.go(-1, camera);
+});
+document.getElementById('nav-next')!.addEventListener('click', () => {
+  resumeAll();
+  tour.go(1, camera);
+});
+document.getElementById('nav-play')!.addEventListener('click', () => {
+  if (tour.isPaused) resumeAll();
+  else tour.notifyInput(camera);
+});
+document.getElementById('resume-pill')!.addEventListener('click', resumeAll);
 
 document.getElementById('start-btn')!.addEventListener('click', () => {
   narrator.unlock();
@@ -153,7 +179,6 @@ function frame(now: number): void {
   stage.render(sunVec, camera.e, dt);
 
   hud.updateScale(Math.pow(10, camera.e) * (viewW / viewH));
-  hud.updateGauge(camera.e);
 
   debugPanel.update({
     e: camera.e.toFixed(2),

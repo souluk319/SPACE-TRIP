@@ -1,8 +1,12 @@
 import { clamp, lerp, smoothstep } from './math';
 import type { Milestone, Vec3 } from '../scene/types';
 
-/** 지구가 화면 높이의 ~85%를 차지하는 수준 (원근 카메라 기준 — 더 들어가면 표면 안) */
-export const E_MIN = 7.25;
+/**
+ * 최소 줌 지수. 작은 천체(달·수성)도 화면을 채울 수 있게 낮춘다.
+ * 6.85 = 화면 세로 ~710만 m. 지구(지름 1,270만 m)는 화면을 꽉 채우지만
+ * 카메라(CAM_DIST≈107유닛)가 표면 안으로 들어가지 않는 한계선. 달 프레이밍(e6.88)도 통과.
+ */
+export const E_MIN = 6.85;
 /** 관측 가능한 우주가 들어오는 수준 */
 export const E_MAX = 27.2;
 

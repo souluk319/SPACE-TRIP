@@ -65,6 +65,11 @@ export class Narrator {
     for (const id of ids) this.getAudio(id);
   }
 
+  /** 현재 내레이션이 끝났을 때 1회 호출 (투어 자동 전환 타이밍용) */
+  onNarrationEnd: (() => void) | null = null;
+  /** 재생 중(디바운스 대기 포함) 여부 */
+  speaking = false;
+
   requestNarration(id: string, text: string): void {
     this.gen++;
     if (this.timer !== null) {
@@ -72,12 +77,22 @@ export class Narrator {
       this.timer = null;
     }
     this.stopPlayback();
-    if (!this.enabled || !this.unlocked) return;
+    if (!this.enabled || !this.unlocked) {
+      this.speaking = false;
+      return;
+    }
+    this.speaking = true;
     const gen = this.gen;
     this.timer = window.setTimeout(() => {
       this.timer = null;
       this.playFile(id, text, gen);
     }, 600);
+  }
+
+  private fireEnd(gen: number): void {
+    if (gen !== this.gen) return; // 낡은 콜백 무시
+    this.speaking = false;
+    this.onNarrationEnd?.();
   }
 
   setEnabled(on: boolean): void {
@@ -129,9 +144,16 @@ export class Narrator {
     const a = this.getAudio(id);
     a.currentTime = 0;
     this.current = a;
+    const onEnded = () => {
+      a.removeEventListener('ended', onEnded);
+      this.fireEnd(gen);
+    };
+    a.addEventListener('ended', onEnded);
     a.play().catch(() => {
+      a.removeEventListener('ended', onEnded);
       // 파일 없음/자동재생 차단 → Web Speech 폴백
       if (this.gen === gen && this.enabled) this.speakTTS(text, gen);
+      else this.fireEnd(gen);
     });
   }
 
@@ -146,7 +168,10 @@ export class Narrator {
   }
 
   private speakTTS(text: string, gen: number, isRetry = false): void {
-    if (!this.speechSupported) return;
+    if (!this.speechSupported) {
+      this.fireEnd(gen);
+      return;
+    }
     if (!this.voice) this.pickVoice();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'ko-KR';
@@ -155,6 +180,7 @@ export class Narrator {
     u.onstart = () => {
       started = true;
     };
+    u.onend = () => this.fireEnd(gen);
     speechSynthesis.speak(u);
 
     // Chrome 결함 대응: 빠른 cancel/speak 반복 뒤 speak가 무시되면 1회 재시도
