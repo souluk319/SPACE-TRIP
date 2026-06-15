@@ -79,8 +79,17 @@ export class CinematicTour {
     if (this.phase !== 'paused') {
       this.phase = 'paused';
       camera.releaseLock();
+      camera.beginExploreFromCurrent(); // 현재 천체에서 이어 탐험 (지구로 안 튐)
       this.onPauseChange?.(true);
     }
+  }
+
+  /** 목적지 메뉴/타임라인 — 임의 챕터로 바로 이동 */
+  goTo(index: number, camera: Camera): void {
+    if (!this.released) return;
+    camera.clearUserFocus();
+    this.goToStop(Math.min(Math.max(index, 0), TOUR_STOPS.length - 1), camera);
+    this.onPauseChange?.(false);
   }
 
   /** '계속 듣기' — 현재 챕터를 다시 프레이밍하고 이어서 진행 */

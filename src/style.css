@@ -546,6 +546,108 @@ body.tour-paused #resume-pill {
   height: 18px;
 }
 
+/* ── 목적지 패널 (settings 카드 스타일 재사용) ── */
+#dest-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 5, 11, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: opacity 0.35s var(--ease);
+}
+
+#dest-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#dest-card {
+  width: 100%;
+  max-width: 360px;
+  max-height: 78vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px 16px;
+  background: rgba(11, 16, 30, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+
+#dest-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+#dest-head h2 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+#dest-close {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+#dest-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+#dest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  margin: 0 -8px;
+  padding: 0 8px;
+}
+
+.dest-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dest-item:hover {
+  background: rgba(120, 150, 230, 0.12);
+  color: var(--text);
+}
+
+.dest-item .d-idx {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+}
+
+.dest-item .d-name {
+  font-size: 15px;
+  font-weight: 500;
+}
+
 .set-section {
   margin-bottom: 22px;
 }

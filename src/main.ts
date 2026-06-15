@@ -117,6 +117,38 @@ document.getElementById('nav-play')!.addEventListener('click', () => {
 });
 document.getElementById('resume-pill')!.addEventListener('click', resumeAll);
 
+// 목적지 메뉴 — 어느 천체든 바로 이동
+const destOverlay = document.getElementById('dest-overlay')!;
+const destList = document.getElementById('dest-list')!;
+TOUR_STOPS.forEach((stop, i) => {
+  const item = document.createElement('button');
+  item.className = 'dest-item';
+  item.innerHTML = `<span class="d-idx">${String(i + 1).padStart(2, '0')}</span><span class="d-name">${stop.title}</span>`;
+  item.addEventListener('click', () => {
+    narrator.unlock();
+    ambient.start();
+    if (!started) {
+      startOverlay.classList.add('hidden');
+      document.body.classList.add('started');
+      started = true;
+      tour.release(camera);
+    }
+    tour.goTo(i, camera);
+    destOverlay.classList.add('hidden');
+  });
+  destList.appendChild(item);
+});
+document.getElementById('dest-btn')!.addEventListener('click', () => {
+  onGesture();
+  destOverlay.classList.remove('hidden');
+});
+document.getElementById('dest-close')!.addEventListener('click', () =>
+  destOverlay.classList.add('hidden'),
+);
+destOverlay.addEventListener('click', (e) => {
+  if (e.target === destOverlay) destOverlay.classList.add('hidden');
+});
+
 document.getElementById('start-btn')!.addEventListener('click', () => {
   narrator.unlock();
   ambient.start();
