@@ -11,8 +11,9 @@ import { sfx } from './audio/sfx';
 import { Hud } from './ui/hud';
 import { Controls } from './ui/controls';
 import { Settings } from './ui/settings';
+import { InfoPanel } from './ui/infopanel';
 import { DebugPanel } from './ui/debug';
-import { Stage, VIEW_UNITS } from './three/stage';
+import { Stage, VIEW_UNITS, IS_MOBILE } from './three/stage';
 import { OrbitRig } from './three/orbitRig';
 import { World } from './three/rescale';
 import { Environment } from './three/environment';
@@ -56,6 +57,7 @@ const onGesture = () => {
 const hud = new Hud(TOUR_STOPS.length);
 const controls = new Controls(camera, narrator, onGesture);
 new Settings(narrator, onGesture);
+const infoPanel = new InfoPanel();
 
 const freeLook = new FreeLook();
 bindInput(canvas, camera, rig, onGesture, {
@@ -85,6 +87,7 @@ tour.beginIntro(camera);
 tour.onStop = (stop) => {
   hud.showCaption(stop);
   hud.updateChapter(tour.index, tour.total);
+  infoPanel.show(stop.id);
   narrator.requestNarration(stop.id, stop.narration);
   if (started) sfx.transition();
 };
@@ -156,6 +159,7 @@ document.getElementById('start-btn')!.addEventListener('click', () => {
   startOverlay.classList.add('hidden');
   document.body.classList.add('started');
   started = true;
+  infoPanel.setOpen(!IS_MOBILE); // 모바일은 행성을 가리지 않게 기본 닫힘
   tour.release(camera);
 });
 

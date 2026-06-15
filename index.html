@@ -58,6 +58,11 @@
         <circle cx="12" cy="12" r="2.2" fill="currentColor" />
         <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
       </symbol>
+      <symbol id="ic-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.4" />
+        <path d="M12 11v5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <circle cx="12" cy="7.8" r="1.1" fill="currentColor" />
+      </symbol>
     </svg>
 
     <!-- 좌상단: 스케일 + 챕터 타임라인 -->
@@ -72,6 +77,7 @@
 
     <!-- 우측 컨트롤 -->
     <div id="side-controls">
+      <button id="info-toggle" aria-label="정보 패널 켜기/끄기"><svg><use href="#ic-info" /></svg></button>
       <button id="dest-btn" aria-label="목적지 선택"><svg><use href="#ic-dest" /></svg></button>
       <button id="zoom-in" aria-label="확대"><svg><use href="#ic-plus" /></svg></button>
       <button id="zoom-out" aria-label="축소"><svg><use href="#ic-minus" /></svg></button>
@@ -79,6 +85,12 @@
       <button id="mute-btn" aria-label="소리 끄기" aria-pressed="false"><svg><use href="#ic-audio-on" /></svg></button>
       <button id="settings-btn" aria-label="설정"><svg><use href="#ic-settings" /></svg></button>
     </div>
+
+    <!-- 좌측: 천체 교육 정보 패널 -->
+    <aside id="infopanel">
+      <button id="info-close" aria-label="정보 닫기"><svg><use href="#ic-close" /></svg></button>
+      <div id="info-body"></div>
+    </aside>
 
     <!-- 하단 좌측: lower-third 내레이션 -->
     <div id="lowerthird">

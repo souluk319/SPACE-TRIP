@@ -300,6 +300,272 @@ body.tour-paused #resume-pill {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ── 좌측: 천체 교육 정보 패널 ── */
+#infopanel {
+  position: fixed;
+  left: 16px;
+  top: 78px;
+  bottom: 88px;
+  width: 348px;
+  max-width: calc(100vw - 32px);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 4px 18px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(7, 10, 22, 0.74);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  transform: translateX(-12px);
+  pointer-events: none;
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+}
+
+body.started.info-open #infopanel.has-content {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+#info-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+#info-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+#info-body {
+  overflow-y: auto;
+  padding-right: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+#info-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+#info-body::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 3px;
+}
+
+.info-kind {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.info-name {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 3px 0 1px;
+}
+
+.info-en {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
+.info-tagline {
+  margin-top: 12px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.info-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.info-light svg {
+  width: 14px;
+  height: 14px;
+}
+
+.info-overview {
+  margin-top: 14px;
+  font-size: 13.5px;
+  line-height: 1.72;
+  color: var(--text-dim);
+}
+
+.info-section-label {
+  margin: 22px 0 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.info-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.info-stat {
+  padding: 11px 13px;
+  background: rgba(10, 14, 28, 0.6);
+}
+
+.is-label {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-bottom: 3px;
+}
+
+.is-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.is-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 1px;
+}
+
+.info-compare {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cmp-row {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.cmp-k {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.cmp-bars {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+}
+
+.cmp-circle {
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.cmp-circle.earth {
+  width: calc(8px + var(--r) * 22px);
+  height: calc(8px + var(--r) * 22px);
+  background: #3b6bb0;
+}
+
+.cmp-circle.other {
+  width: calc(8px + var(--r) * 22px);
+  height: calc(8px + var(--r) * 22px);
+  background: var(--accent);
+}
+
+.cmp-v {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.cmp-bar-track {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(120, 140, 200, 0.18);
+}
+
+.cmp-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.cmp-earth-tick {
+  position: absolute;
+  top: -3px;
+  width: 1.5px;
+  height: 12px;
+  background: #6f8fd0;
+}
+
+.info-facts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.info-facts li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.info-facts li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* 정보 패널 열렸을 땐 하단 자막 숨김 (중복 방지) */
+body.info-open #lowerthird {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
 /* ── 하단 좌측: lower-third 내레이션 ── */
 #lowerthird {
   position: fixed;
@@ -776,5 +1042,29 @@ body.tour-paused #resume-pill {
 
   #resume-pill {
     bottom: 76px;
+  }
+
+  /* 모바일: 정보 패널 = 하단 시트 (행성은 위에 보임) */
+  #infopanel {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 58vh;
+    border-radius: 18px 18px 0 0;
+    border-bottom: none;
+    padding: 18px 4px 16px 18px;
+    transform: translateY(16px);
+  }
+
+  body.started.info-open #infopanel.has-content {
+    transform: none;
+  }
+
+  /* 시트가 열리면 하단 자막/내비는 시트 뒤로 가려지므로 자막만 숨김 */
+  body.info-open #tour-nav {
+    opacity: 0.25;
   }
 }
