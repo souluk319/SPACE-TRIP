@@ -230,8 +230,10 @@ body.started #tour-nav {
   opacity: 1;
 }
 
-body.tour-paused #tour-nav {
-  opacity: 0.35;
+/* 일시정지 = 자유 탐험 중. 내비는 또렷하게 유지(재생 버튼이 곧 '여정 계속') */
+body.tour-paused #nav-play {
+  color: var(--accent);
+  background: rgba(239, 220, 170, 0.14);
 }
 
 #tour-nav button {
@@ -263,41 +265,6 @@ body.tour-paused #tour-nav {
   letter-spacing: 0.04em;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
-}
-
-/* ── 일시정지 시: 계속 듣기 pill ── */
-#resume-pill {
-  position: fixed;
-  left: 50%;
-  bottom: 80px;
-  transform: translateX(-50%) translateY(8px);
-  z-index: 5;
-  display: none;
-  align-items: center;
-  gap: 7px;
-  padding: 11px 22px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: var(--panel-strong, rgba(18, 24, 40, 0.82));
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.35s, transform 0.35s;
-}
-
-#resume-pill svg {
-  width: 16px;
-  height: 16px;
-}
-
-body.tour-paused #resume-pill {
-  display: flex;
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
 }
 
 /* ── 좌측: 천체 교육 정보 패널 ── */
@@ -1006,6 +973,40 @@ body.info-open #lowerthird {
 }
 
 /* ── 모바일 ── */
+/* ≤1024px: 좌측 패널이 가운데 행성을 가리므로 하단 시트로 전환,
+   우측 버튼은 상단 고정 (행성은 시트 위에 또렷이 보임) */
+@media (max-width: 1024px) {
+  #infopanel {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 50vh;
+    border-radius: 18px 18px 0 0;
+    border-bottom: none;
+    padding: 18px 4px 16px 22px;
+    transform: translateY(16px);
+  }
+
+  body.started.info-open #infopanel.has-content {
+    transform: none;
+  }
+
+  #side-controls {
+    top: 64px;
+    transform: none;
+  }
+
+  /* 시트가 열리면 하단 내비는 시트 뒤로 가려지므로 숨김 */
+  body.info-open #tour-nav {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* ≤600px (휴대폰): 버튼·자막 크기 축소 */
 @media (max-width: 600px) {
   #hud-top {
     top: 14px;
@@ -1015,20 +1016,24 @@ body.info-open #lowerthird {
   }
 
   #side-controls {
-    right: 14px;
-    gap: 8px;
+    right: 12px;
+    gap: 7px;
   }
 
   #side-controls button {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
   }
 
-  /* 모바일: 자막 위 → 내비 아래로 세로 배치 (겹침 방지) */
+  #side-controls svg {
+    width: 19px;
+    height: 19px;
+  }
+
   #lowerthird {
     left: 16px;
     right: 16px;
-    bottom: 84px;
+    bottom: 82px;
     max-width: none;
   }
 
@@ -1037,34 +1042,6 @@ body.info-open #lowerthird {
   }
 
   #tour-nav {
-    bottom: 20px;
-  }
-
-  #resume-pill {
-    bottom: 76px;
-  }
-
-  /* 모바일: 정보 패널 = 하단 시트 (행성은 위에 보임) */
-  #infopanel {
-    left: 0;
-    right: 0;
-    top: auto;
-    bottom: 0;
-    width: 100%;
-    max-width: none;
-    max-height: 58vh;
-    border-radius: 18px 18px 0 0;
-    border-bottom: none;
-    padding: 18px 4px 16px 18px;
-    transform: translateY(16px);
-  }
-
-  body.started.info-open #infopanel.has-content {
-    transform: none;
-  }
-
-  /* 시트가 열리면 하단 자막/내비는 시트 뒤로 가려지므로 자막만 숨김 */
-  body.info-open #tour-nav {
-    opacity: 0.25;
+    bottom: 18px;
   }
 }

@@ -118,7 +118,6 @@ document.getElementById('nav-play')!.addEventListener('click', () => {
   if (tour.isPaused) resumeAll();
   else tour.notifyInput(camera);
 });
-document.getElementById('resume-pill')!.addEventListener('click', resumeAll);
 
 // 목적지 메뉴 — 어느 천체든 바로 이동
 const destOverlay = document.getElementById('dest-overlay')!;
@@ -208,6 +207,15 @@ function frame(now: number): void {
   keyDir.addScaledVector(keyLeft, 0.42).normalize();
   stage.updateLight(keyDir);
   sunDirUniform.value.copy(keyDir);
+
+  // 정보 패널이 가린 영역에서 포커스 천체를 비킴 (넓은 화면=오른쪽, 좁은 화면=위)
+  let panX = 0;
+  let panY = 0;
+  if (started && document.body.classList.contains('info-open')) {
+    if (viewW > 1024) panX = (188 * VIEW_UNITS) / viewH; // 좌측 패널 → 오른쪽으로
+    else panY = (0.24 * viewH * VIEW_UNITS) / viewH; // 하단 시트 → 위로
+  }
+  rig.setPan(panX, panY);
 
   world.update(dt, camera, stage.camera, labels, viewW, viewH);
   env.update(dt, camera.e);

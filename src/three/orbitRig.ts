@@ -1,12 +1,17 @@
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import { clamp } from '../core/math';
 import { CAM_DIST } from './stage';
 
 const EL_MAX = 1.4; // ±80°
 
+const _right = new THREE.Vector3();
+const _up = new THREE.Vector3();
+const _target = new THREE.Vector3();
+
 /**
  * 커스텀 궤도 리그 — 카메라가 원점을 중심으로 구면 궤도를 돈다.
  * 줌은 e-시스템(세상 재스케일)이 담당하므로 dolly 없음.
+ * panX/panY: 포커스 천체를 화면에서 옆으로/위로 비키는 스크린 오프셋(씬 유닛).
  */
 export class OrbitRig {
   private az = -0.45;
@@ -16,6 +21,16 @@ export class OrbitRig {
   private azVel = 0;
   private elVel = 0;
   private idle = 99;
+  private panXT = 0;
+  private panYT = 0;
+  private panX = 0;
+  private panY = 0;
+
+  /** 포커스 천체를 화면에서 비키는 오프셋 (씬 유닛, +X=오른쪽 / +Y=위) */
+  setPan(x: number, y: number): void {
+    this.panXT = x;
+    this.panYT = y;
+  }
 
   rotateBy(dAz: number, dEl: number): void {
     this.azT += dAz;
@@ -55,5 +70,16 @@ export class OrbitRig {
       CAM_DIST * Math.cos(this.el) * Math.cos(this.az),
     );
     camera.lookAt(0, 0, 0);
+
+    // 패널 오프셋 — 카메라 right/up을 따라 시선을 살짝 틀어 천체를 비킨다
+    const pk = 1 - Math.exp(-dt * 6);
+    this.panX += (this.panXT - this.panX) * pk;
+    this.panY += (this.panYT - this.panY) * pk;
+    if (Math.abs(this.panX) > 0.02 || Math.abs(this.panY) > 0.02) {
+      _right.setFromMatrixColumn(camera.matrix, 0);
+      _up.setFromMatrixColumn(camera.matrix, 1);
+      _target.copy(_right).multiplyScalar(-this.panX).addScaledVector(_up, -this.panY);
+      camera.lookAt(_target);
+    }
   }
 }
